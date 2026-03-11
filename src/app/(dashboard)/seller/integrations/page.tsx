@@ -159,7 +159,7 @@ export default function SellerIntegrationsPage() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Test failed')
     } finally {
-      setTestingSheet(s => ({ ...s, [id]: false })
+      setTestingSheet(s => ({ ...s, [id]: false }))
     }
   }
 

@@ -528,8 +528,6 @@ export default function CallCenterPage() {
                       </div>
                     </div>
                     {selectedOrder?.id === order.id && (
-                      <>
-                        {/* Order Details Panel */}
                       <div className="mt-4 pt-4 border-t">
                         <div className="space-y-4">
                           {/* Customer Info */}
@@ -670,7 +668,6 @@ export default function CallCenterPage() {
                           </div>
                         </div>
                       </div>
-                      </>
                     )}
                   </div>
                 </div>
