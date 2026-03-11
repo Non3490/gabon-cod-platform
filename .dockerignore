@@ -1,0 +1,45 @@
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+README.md
+.next
+.git
+package-lock.json
+yarn-lock
+pnpm-lock.yaml
+test
+*.log
+local-*
+
+# Production
+build
+dist
+out/
+
+# Database (will be created in container)
+db/*.db
+db/*.db-journal
+
+# Environment (will be set in Back4App)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Misc
+.vercel
+.cache
+coverage
