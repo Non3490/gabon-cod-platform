@@ -343,7 +343,6 @@ export default function FinancePage() {
                `Previous ${period}`}
             </Badge>
           )}
-          </div>
         </div>
 
         {/* Key Metrics */}
