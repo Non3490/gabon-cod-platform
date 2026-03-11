@@ -1,0 +1,4 @@
+    } finally {
+      setSyncingSheet(s => ({ ...s, [id]: false }));
+      setTestingSheet(s => ({ ...s, [id]: false }));
+    }

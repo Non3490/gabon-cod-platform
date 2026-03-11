@@ -526,10 +526,6 @@ export default function CallCenterPage() {
                           <p className="text-sm text-muted-foreground truncate">{order.productDescription}</p>
                         )}
                       </div>
-                    </div>
-                    {selectedOrder?.id === order.id && (
-                      <div className="mt-4 pt-4 border-t">
-                        <div className="space-y-4">
                           {/* Customer Info */}
                           <div className="grid gap-3 text-sm">
                             <div>
