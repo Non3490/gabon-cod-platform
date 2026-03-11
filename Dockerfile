@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production=false
+RUN npm install
 
 # Copy the rest of the application
 COPY . .
@@ -25,8 +25,8 @@ FROM node:20-alpine AS runner
 # Set environment to production
 ENV NODE_ENV=production
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dumb-init for proper signal handling and wget for healthcheck
+RUN apk add --no-cache dumb-init wget
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
