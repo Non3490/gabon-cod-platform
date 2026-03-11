@@ -736,7 +736,7 @@ export default function FinancePage() {
           </Card>
         )}
 
-        {/* Recent Expenses */}
+        {/* Recent Expenses - TODO: Fix syntax error */}
         {user.role === 'ADMIN' && (
           <Card>
             <CardHeader>
