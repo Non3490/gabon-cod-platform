@@ -106,7 +106,7 @@ export default function SellerIntegrationsPage() {
       setSecrets(s => ({ ...s, [platform]: '' }))
       await loadData()
     } catch { toast.error('Failed to save') } finally {
-      setSaving(s => ({ ...s, [platform]: false })
+      setSaving(s => ({ ...s, [platform]: false }))
     }
   }
 

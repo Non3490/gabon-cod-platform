@@ -127,9 +127,10 @@ interface InvoiceDocumentProps {
   orders?: any[]
 }
 
-const InvoiceDocument = ({ invoice, seller, orders = [] }: InvoiceDocumentProps) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
+const InvoiceDocument = ({ invoice, seller, orders = [] }: InvoiceDocumentProps) => {
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>INVOICE</Text>
@@ -265,7 +266,8 @@ const InvoiceDocument = ({ invoice, seller, orders = [] }: InvoiceDocumentProps)
       </View>
     </Page>
   </Document>
-)
+  )
+}
 
 /**
  * GET /api/finance/invoices/[id]/pdf
