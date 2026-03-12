@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { SignJWT, jwtVerify } from 'jose'
 import { hash, compare } from 'bcryptjs'
 import { redirect } from 'next/navigation'
-import type { UserRole } from './auth-types'
+import type { UserRole } from '../types/auth-types'
 
 const SECRET_KEY = process.env.JWT_SECRET || 'gabon-cod-platform-secret-key-2024'
 
@@ -107,4 +107,4 @@ export async function requireRole(allowedRoles: string[]) {
 }
 
 export type { UserRole }
-export { roleLabels, roleColors } from './auth-types'
+export { roleLabels, roleColors } from '../types/auth-types'
