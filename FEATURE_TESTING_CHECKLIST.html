@@ -1,0 +1,2239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabon COD Platform - Feature Testing Checklist</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .progress-bar {
+            margin-top: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: #f5f5f5;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .stat-item.passed { color: #4caf50; }
+        .stat-item.failed { color: #f44336; }
+        .stat-item.pending { color: #ff9800; }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            background: #e0e0e0;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover { background: #d0d0d0; }
+        .filter-btn.active { background: #667eea; color: white; }
+        .filter-btn.all { background: #667eea; color: white; }
+        .filter-btn.admin { background: #9c27b0; color: white; }
+        .filter-btn.seller { background: #4caf50; color: white; }
+        .filter-btn.callcenter { background: #ff9800; color: white; }
+        .filter-btn.delivery { background: #2196f3; color: white; }
+        .filter-btn.auth { background: #795548; color: white; }
+        .filter-btn.integrations { background: #607d8b; color: white; }
+
+        .reset-btn {
+            margin-left: auto;
+            background: #f44336;
+            color: white;
+        }
+
+        .expand-all, .collapse-all {
+            background: #9c27b0;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sidebar {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .nav-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item:hover { background: #f0f0f0; }
+        .nav-item.active { background: #667eea; color: white; }
+
+        .nav-item .icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .checklist-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s ease;
+        }
+
+        .section-header:hover { background: #f9f9f9; }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .section-icon.admin { background: #9c27b0; }
+        .section-icon.seller { background: #4caf50; }
+        .section-icon.callcenter { background: #ff9800; }
+        .section-icon.delivery { background: #2196f3; }
+        .section-icon.auth { background: #795548; }
+        .section-icon.integrations { background: #607d8b; }
+
+        .section-title {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title h2 {
+            font-size: 1.3rem;
+            color: #333;
+        }
+
+        .section-badge {
+            background: #e0e0e0;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .section-progress {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+
+        .section-progress svg {
+            transform: rotate(-90deg);
+        }
+
+        .section-progress circle {
+            fill: none;
+            stroke-width: 4;
+        }
+
+        .section-progress .bg { stroke: #e0e0e0; }
+        .section-progress .progress {
+            stroke: #4caf50;
+            stroke-dasharray: 126;
+            stroke-dashoffset: 126;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .section-content.open { max-height: 5000px; }
+
+        .feature-item {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s ease;
+        }
+
+        .feature-item:last-child { border-bottom: none; }
+        .feature-item:hover { background: #fafafa; }
+
+        .feature-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .feature-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+
+        .feature-checkbox.checked {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+
+        .feature-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .feature-checkbox.failed {
+            background: #f44336;
+            border-color: #f44336;
+        }
+
+        .feature-checkbox.failed::after {
+            content: '✗';
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .feature-info {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .feature-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        .test-steps {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .test-steps h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .test-steps ol {
+            margin-left: 20px;
+        }
+
+        .test-steps li {
+            margin-bottom: 8px;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .test-steps li::marker {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .feature-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn.pass {
+            background: #4caf50;
+            color: white;
+        }
+
+        .action-btn.fail {
+            background: #f44336;
+            color: white;
+        }
+
+        .action-btn.reset {
+            background: #9e9e9e;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .notes-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #667eea;
+            font-weight: bold;
+            margin-left: 10px;
+            font-size: 0.9rem;
+        }
+
+        .credentials {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .credentials h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .credentials table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .credentials th, .credentials td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ffeeba;
+        }
+
+        .credentials th {
+            background: #ffe69c;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-indicator.not-started { background: #e0e0e0; }
+        .status-indicator.in-progress { background: #ff9800; }
+        .status-indicator.completed { background: #4caf50; }
+
+        @media print {
+            body { background: white; }
+            .filters, .sidebar, .action-btn { display: none; }
+            .main-content { grid-template-columns: 1fr; }
+            .section-content { max-height: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧪 Gabon COD Platform</h1>
+            <p class="subtitle">Manual Feature Testing Checklist</p>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item passed">✓ Passed: <span id="passedCount">0</span></div>
+                <div class="stat-item failed">✗ Failed: <span id="failedCount">0</span></div>
+                <div class="stat-item pending">⏳ Pending: <span id="pendingCount">0</span></div>
+                <div class="stat-item">Total: <span id="totalCount">0</span></div>
+            </div>
+        </header>
+
+        <div class="credentials">
+            <h3>📋 Test Credentials</h3>
+            <table>
+                <tr>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Password</th>
+                </tr>
+                <tr>
+                    <td>Admin</td>
+                    <td>admin@gaboncod.com</td>
+                    <td>admin123</td>
+                </tr>
+                <tr>
+                    <td>Seller</td>
+                    <td>herve@gaboncod.com</td>
+                    <td>seller123</td>
+                </tr>
+                <tr>
+                    <td>Call Center</td>
+                    <td>merveille@gaboncod.com</td>
+                    <td>agent123</td>
+                </tr>
+                <tr>
+                    <td>Delivery</td>
+                    <td>jeanclaude@gaboncod.com</td>
+                    <td>delivery123</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="filters">
+            <button class="filter-btn all active" onclick="filterFeatures('all')">All</button>
+            <button class="filter-btn admin" onclick="filterFeatures('admin')">Admin</button>
+            <button class="filter-btn seller" onclick="filterFeatures('seller')">Seller</button>
+            <button class="filter-btn callcenter" onclick="filterFeatures('callcenter')">Call Center</button>
+            <button class="filter-btn delivery" onclick="filterFeatures('delivery')">Delivery</button>
+            <button class="filter-btn auth" onclick="filterFeatures('auth')">Authentication</button>
+            <button class="filter-btn integrations" onclick="filterFeatures('integrations')">Integrations</button>
+            <button class="filter-btn reset-btn" onclick="resetAll()">Reset All</button>
+            <button class="expand-all" onclick="expandAll()">Expand All</button>
+            <button class="collapse-all" onclick="collapseAll()">Collapse All</button>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <h3>📂 Quick Navigation</h3>
+                <nav id="navItems"></nav>
+            </div>
+
+            <div id="checklistContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Feature data
+        const features = [
+            // ==================== AUTHENTICATION ====================
+            {
+                id: 'auth',
+                name: 'Authentication',
+                icon: '🔐',
+                category: 'auth',
+                features: [
+                    {
+                        id: 'auth-001',
+                        title: 'User Login',
+                        description: 'Test the login functionality with valid credentials for all user roles (Admin, Seller, Call Center, Delivery). Verify that users can successfully authenticate and are redirected to their appropriate dashboard.',
+                        testSteps: [
+                            'Navigate to the login page at /login',
+                            'Enter admin credentials (admin@gaboncod.com / admin123)',
+                            'Click the login button',
+                            'Verify redirection to admin dashboard',
+                            'Logout and repeat with seller credentials (herve@gaboncod.com / seller123)',
+                            'Verify redirection to seller dashboard',
+                            'Test with call center credentials (merveille@gaboncod.com / agent123)',
+                            'Test with delivery credentials (jeanclaude@gaboncod.com / delivery123)'
+                        ]
+                    },
+                    {
+                        id: 'auth-002',
+                        title: 'Invalid Login Handling',
+                        description: 'Test the system behavior when invalid credentials are provided. Verify proper error messages are displayed and users are not granted access.',
+                        testSteps: [
+                            'Navigate to the login page',
+                            'Enter an invalid email address',
+                            'Enter any password',
+                            'Click login',
+                            'Verify error message is displayed: "Invalid credentials"',
+                            'Verify user remains on login page',
+                            'Test with valid email but wrong password',
+                            'Verify same error handling'
+                        ]
+                    },
+                    {
+                        id: 'auth-003',
+                        title: 'User Logout',
+                        description: 'Test the logout functionality to ensure users can securely end their session and are properly redirected.',
+                        testSteps: [
+                            'Login with any valid user',
+                            'Click the logout button in the sidebar/header',
+                            'Verify redirection to login page',
+                            'Try to access a protected page (e.g., /dashboard)',
+                            'Verify user is redirected back to login',
+                            'Verify session is cleared (check localStorage/cookies)'
+                        ]
+                    },
+                    {
+                        id: 'auth-004',
+                        title: 'Session Persistence',
+                        description: 'Verify that user sessions persist across page refreshes and browser restarts when "Remember Me" is enabled.',
+                        testSteps: [
+                            'Login with valid credentials',
+                            'Check if "Remember Me" option exists and enable it',
+                            'Refresh the page (F5)',
+                            'Verify user remains logged in',
+                            'Close the browser completely',
+                            'Reopen browser and navigate to the application',
+                            'Verify user is still logged in'
+                        ]
+                    },
+                    {
+                        id: 'auth-005',
+                        title: 'Role-Based Access Control',
+                        description: 'Verify that users can only access pages and features appropriate to their role. Admins should access admin pages, sellers should only access seller pages, etc.',
+                        testSteps: [
+                            'Login as admin and verify access to /admin pages',
+                            'Try accessing /seller pages as admin (should work)',
+                            'Logout and login as seller',
+                            'Verify access to /seller pages',
+                            'Try accessing /admin pages as seller (should be denied)',
+                            'Verify redirect to unauthorized page or dashboard',
+                            'Test with call center role - verify only call center pages accessible',
+                            'Test with delivery role - verify only delivery pages accessible'
+                        ]
+                    },
+                    {
+                        id: 'auth-006',
+                        title: 'Password Visibility Toggle',
+                        description: 'Test the password field visibility toggle functionality to improve user experience during login.',
+                        testSteps: [
+                            'Navigate to login page',
+                            'Locate the password input field',
+                            'Find the eye icon or toggle button next to password',
+                            'Click the toggle to show password',
+                            'Verify password is now visible as text',
+                            'Click toggle again to hide password',
+                            'Verify password is masked with dots/bullets'
+                        ]
+                    }
+                ]
+            },
+
+            // ==================== ADMIN FEATURES ====================
+            {
+                id: 'admin',
+                name: 'Admin Dashboard',
+                icon: '👑',
+                category: 'admin',
+                features: [
+                    {
+                        id: 'admin-001',
+                        title: 'Admin Dashboard Overview',
+                        description: 'Verify the admin dashboard displays key metrics including total orders, revenue, active sellers, and delivery agents. Check that charts and visualizations render correctly.',
+                        testSteps: [
+                            'Login as admin (admin@gaboncod.com / admin123)',
+                            'Navigate to /admin or dashboard',
+                            'Verify key metrics cards display: Total Orders, Revenue, Active Sellers, Delivery Agents',
+                            'Check order status distribution chart renders',
+                            'Verify revenue trend graph displays correctly',
+                            'Verify all data loads without errors',
+                            'Check responsive layout on different screen sizes'
+                        ]
+                    },
+                    {
+                        id: 'admin-002',
+                        title: 'User Management',
+                        description: 'Test the ability to view all users, filter by role, and manage user accounts including activation/deactivation.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /users',
+                            'Verify all users are listed in a table',
+                            'Test role filter dropdown (All, Admin, Seller, Call Center, Delivery)',
+                            'Verify search functionality by name or email',
+                            'Click on a user to view details',
+                            'Test deactivating a user (if feature exists)',
+                            'Verify deactivated user cannot login',
+                            'Re-activate the user'
+                        ]
+                    },
+                    {
+                        id: 'admin-003',
+                        title: 'View All Orders',
+                        description: 'Verify admins can view all orders across all sellers with filtering, sorting, and search capabilities.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /orders',
+                            'Verify orders from all sellers are displayed',
+                            'Test status filter: NEW, CONFIRMED, SHIPPED, DELIVERED, RETURNED, CANCELLED',
+                            'Test date range filter',
+                            'Test search by order code, customer name, or phone',
+                            'Verify sorting by date, amount, status works',
+                            'Click on an order to view full details'
+                        ]
+                    },
+                    {
+                        id: 'admin-004',
+                        title: 'Order Detail View',
+                        description: 'Test the order detail page showing all order information including customer details, items, delivery info, and order history.',
+                        testSteps: [
+                            'Navigate to /orders',
+                            'Click on any order',
+                            'Verify order code and status display',
+                            'Check customer details: name, phone, address, city',
+                            'Verify product information: name, quantity, price',
+                            'Check delivery details: assigned agent, tracking number',
+                            'Verify order history/status changes are logged',
+                            'Test status update if admin has permission'
+                        ]
+                    },
+                    {
+                        id: 'admin-005',
+                        title: 'Create/Edit Products',
+                        description: 'Test admin ability to create new products and edit existing ones in the catalog.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /admin/catalog or /catalog',
+                            'Click "Add Product" or similar button',
+                            'Fill in product details: name, description, price, quantity, alert level',
+                            'Upload product image (if feature exists)',
+                            'Select seller assignment',
+                            'Click save/create',
+                            'Verify product appears in catalog',
+                            'Edit the created product and verify changes save'
+                        ]
+                    },
+                    {
+                        id: 'admin-006',
+                        title: 'Stock Management',
+                        description: 'Verify admins can view stock levels across all products and adjust inventory.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /stock',
+                            'Verify all products with stock levels are displayed',
+                            'Check low stock alerts are visible for items below threshold',
+                            'Test filtering by seller',
+                            'Test sorting by quantity or alert level',
+                            'Update stock quantity for a product (if allowed)',
+                            'Verify stock change is saved'
+                        ]
+                    },
+                    {
+                        id: 'admin-007',
+                        title: 'Daily Stock Snapshots',
+                        description: 'Test the daily stock snapshot system that tracks inventory changes over time.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /admin/stock/snapshots',
+                            'Verify snapshots are displayed with date, product, and quantities',
+                            'Test date range filter to view specific periods',
+                            'Verify initial stock, in-for-delivery, out-for-delivery, and final stock columns',
+                            'Check export to CSV functionality',
+                            'Verify stock flow visualization (chart)',
+                            'Trigger manual snapshot (if admin action available)'
+                        ]
+                    },
+                    {
+                        id: 'admin-008',
+                        title: 'Finance Dashboard',
+                        description: 'Test the finance section showing revenue, payouts, expenses, and daily remittances.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /finance',
+                            'Verify total revenue display',
+                            'Check pending payouts amount',
+                            'View expenses summary',
+                            'Navigate to daily remittance view',
+                            'Verify daily breakdown of cash collected',
+                            'Test filtering by date range',
+                            'Check seller payout status'
+                        ]
+                    },
+                    {
+                        id: 'admin-009',
+                        title: 'Daily Remittance Lock',
+                        description: 'Test the feature that allows locking daily remittance to prevent further modifications for that day.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /finance/remittance',
+                            'Select a date (not today)',
+                            'Click "Lock Remittance" button',
+                            'Verify confirmation dialog appears',
+                            'Confirm the lock',
+                            'Verify remittance is marked as locked',
+                            'Test that locked remittance cannot be modified',
+                            'Verify lock date/time is displayed'
+                        ]
+                    },
+                    {
+                        id: 'admin-010',
+                        title: 'Invoice Management',
+                        description: 'Test viewing, creating, and generating PDF invoices for sellers.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /finance/invoices',
+                            'Verify invoices list is displayed',
+                            'Check invoice status: pending, paid, overdue',
+                            'Click on an invoice to view details',
+                            'Click "Download PDF" or similar',
+                            'Verify PDF downloads correctly with all invoice details',
+                            'Test creating a new invoice for a seller'
+                        ]
+                    },
+                    {
+                        id: 'admin-011',
+                        title: 'Analytics Dashboard',
+                        description: 'Test analytics features including order trends, conversion rates, and performance metrics.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /analytics',
+                            'Verify order funnel chart displays',
+                            'Check conversion rate: NEW to CONFIRMED, CONFIRMED to DELIVERED',
+                            'View revenue by seller chart',
+                            'Test date range filter (7d, 30d, 90d, custom)',
+                            'Verify city performance analytics',
+                            'Test comparison mode between date periods',
+                            'Export analytics data to CSV'
+                        ]
+                    },
+                    {
+                        id: 'admin-012',
+                        title: 'Products Analytics Funnel',
+                        description: 'Test the product-level analytics showing leads, confirmed orders, shipped, delivered, returned items, and conversion rates.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /analytics or /analytics/products',
+                            'Locate products funnel table',
+                            'Verify columns: Product Name, Leads, Confirmed, Shipped, Delivered, Returned, Conf. Rate, Del. Rate',
+                            'Test sorting by each column',
+                            'Filter by date period (7d, 30d, 90d)',
+                            'Click "Export CSV" and verify download',
+                            'Verify confirmation rate and delivery rate calculations are correct'
+                        ]
+                    },
+                    {
+                        id: 'admin-013',
+                        title: 'Analytics Comparison',
+                        description: 'Test the comparison feature to compare metrics between two different time periods.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /analytics',
+                            'Enable comparison mode',
+                            'Select first period (e.g., Last 30 days)',
+                            'Select second period (e.g., Previous 30 days)',
+                            'Verify side-by-side comparison displays',
+                            'Check percentage change indicators (green for increase, red for decrease)',
+                            'Verify order count, revenue, and conversion rate comparisons'
+                        ]
+                    },
+                    {
+                        id: 'admin-014',
+                        title: 'Zone Management',
+                        description: 'Test the ability to manage delivery zones and assign agents to zones.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /admin/zones',
+                            'Verify existing zones are listed',
+                            'Click "Add Zone" or similar',
+                            'Enter zone name and description',
+                            'Assign delivery agent(s) to zone',
+                            'Save the zone',
+                            'Verify zone appears in list',
+                            'Edit zone to change assigned agent',
+                            'Test deleting a zone'
+                        ]
+                    },
+                    {
+                        id: 'admin-015',
+                        title: 'Delivery Fee Configuration',
+                        description: 'Test configuring per-delivery-man fee settings for different agents.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /admin/delivery or settings',
+                            'Find delivery fee configuration section',
+                            'Select a delivery agent',
+                            'Set commission/fee percentage or amount',
+                            'Save configuration',
+                            'Verify setting persists',
+                            'Test different fee structures for different agents'
+                        ]
+                    },
+                    {
+                        id: 'admin-016',
+                        title: 'Expense Type Management',
+                        description: 'Test managing expense categories for tracking operational costs.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /admin/expense-types',
+                            'Verify existing expense types: Internet, Call Minutes, Transportation, Other',
+                            'Click "Add Expense Type"',
+                            'Enter new expense type name and description',
+                            'Set default budget (if available)',
+                            'Save the expense type',
+                            'Verify new type appears in dropdowns',
+                            'Edit an existing expense type',
+                            'Test deleting an expense type'
+                        ]
+                    },
+                    {
+                        id: 'admin-017',
+                        title: 'GPS Driver Assignment',
+                        description: 'Test the GPS location tracking for driver assignment and route optimization.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /admin/delivery',
+                            'View map with delivery agent locations',
+                            'Verify current agent positions display on map',
+                            'Select pending orders for assignment',
+                            'Click "Auto-assign by GPS" or similar',
+                            'Verify system assigns orders to nearest available driver',
+                            'Check that assignment considers zone and distance',
+                            'Verify driver receives notification of assignment'
+                        ]
+                    },
+                    {
+                        id: 'admin-018',
+                        title: 'Sourcing Request Management',
+                        description: 'Test admin ability to review, approve, and manage product sourcing requests from sellers.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /admin/sourcing',
+                            'View pending sourcing requests from sellers',
+                            'Click on a request to view details',
+                            'Check product images and descriptions',
+                            'Click "Approve & Mark In Transit"',
+                            'Verify status changes to IN_TRANSIT',
+                            'Find IN_TRANSIT request and click "Mark as Received"',
+                            'Enter actual quantity received and damaged quantity',
+                            'Upload received images (if applicable)',
+                            'Click save receipt',
+                            'Verify stock is updated with received quantity',
+                            'Test "Reject" button with reason input'
+                        ]
+                    },
+                    {
+                        id: 'admin-019',
+                        title: 'Blacklist Management',
+                        description: 'Test the blacklist feature for blocking fraudulent or problematic customers.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /admin/blacklist',
+                            'View existing blacklisted customers',
+                            'Click "Add to Blacklist"',
+                            'Enter customer phone number or email',
+                            'Add reason for blacklisting',
+                            'Save the entry',
+                            'Verify customer appears in blacklist',
+                            'Try creating an order for blacklisted customer (should be blocked)',
+                            'Remove customer from blacklist and test order creation again'
+                        ]
+                    },
+                    {
+                        id: 'admin-020',
+                        title: 'Delivery Overview',
+                        description: 'Test the delivery overview showing all delivery agents and their current status.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /admin/delivery',
+                            'Verify all delivery agents are listed',
+                            'Check each agent\'s: assigned orders, delivered count, cash on hand',
+                            'View agent online/offline status',
+                            'Click on agent to see detailed route and assigned orders',
+                            'Verify map shows agent current location'
+                        ]
+                    },
+                    {
+                        id: 'admin-021',
+                        title: 'Settings - Twilio Configuration',
+                        description: 'Test configuring Twilio for SMS/WhatsApp notifications and voice calls.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /settings or /admin/settings',
+                            'Find Twilio settings section',
+                            'Enter Twilio Account SID',
+                            'Enter Twilio Auth Token',
+                            'Configure phone numbers for SMS and Voice',
+                            'Click "Save"',
+                            'Click "Test Connection" button',
+                            'Verify test message/call works',
+                            'Check settings persist after logout/login'
+                        ]
+                    },
+                    {
+                        id: 'admin-022',
+                        title: 'Settings - Pusher Configuration',
+                        description: 'Test configuring Pusher for real-time updates across the platform.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /admin/settings/pusher',
+                            'Enter Pusher App ID',
+                            'Enter Pusher Key',
+                            'Enter Pusher Secret',
+                            'Select Pusher Cluster',
+                            'Click "Save"',
+                            'Click "Test Connection" button',
+                            'Verify connection test passes',
+                            'Trigger an order status update',
+                            'Verify real-time notification appears'
+                        ]
+                    },
+                    {
+                        id: 'admin-023',
+                        title: 'Activity Logs',
+                        description: 'Test viewing and filtering activity logs for audit trail purposes.',
+                        testSteps: [
+                            'Login as admin',
+                            'Navigate to /activity-logs',
+                            'Verify recent activities are displayed',
+                            'Check log entries show: user, action, timestamp, details',
+                            'Test filter by user',
+                            'Test filter by action type (LOGIN, ORDER_UPDATE, etc.)',
+                            'Test date range filter',
+                            'Search for specific activity',
+                            'Export logs to CSV'
+                        ]
+                    }
+                ]
+            },
+
+            // ==================== SELLER FEATURES ====================
+            {
+                id: 'seller',
+                name: 'Seller Dashboard',
+                icon: '🏪',
+                category: 'seller',
+                features: [
+                    {
+                        id: 'seller-001',
+                        title: 'Seller Dashboard Overview',
+                        description: 'Verify seller dashboard displays personalized metrics including their orders, revenue, stock levels, and pending actions.',
+                        testSteps: [
+                            'Login as seller (herve@gaboncod.com / seller123)',
+                            'Navigate to /seller or /dashboard',
+                            'Verify seller\'s order count displays',
+                            'Check revenue specific to seller',
+                            'Verify stock levels for seller\'s products only',
+                            'Check low stock alerts for seller\'s items',
+                            'Verify wallet balance display',
+                            'Test data loads without errors'
+                        ]
+                    },
+                    {
+                        id: 'seller-002',
+                        title: 'View Own Orders',
+                        description: 'Test that sellers can only view their own orders and not other sellers\' data.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/orders',
+                            'Verify only seller\'s orders are displayed',
+                            'Check order statuses: NEW, CONFIRMED, SHIPPED, DELIVERED, RETURNED, CANCELLED',
+                            'Test search by order code or customer name',
+                            'Test status filters',
+                            'Test date range filters',
+                            'Click on an order to view details',
+                            'Verify order details are complete'
+                        ]
+                    },
+                    {
+                        id: 'seller-003',
+                        title: 'Create Manual Order',
+                        description: 'Test seller ability to manually create orders through the platform.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/orders',
+                            'Click "New Order" or "+" button',
+                            'Select product from dropdown',
+                            'Enter customer name',
+                            'Enter customer phone number',
+                            'Enter delivery address',
+                            'Select city/zone',
+                            'Enter quantity',
+                            'Click "Create Order"',
+                            'Verify order is created with NEW status',
+                            'Verify order appears in order list',
+                            'Check that order code is generated'
+                        ]
+                    },
+                    {
+                        id: 'seller-004',
+                        title: 'Import Orders from CSV',
+                        description: 'Test bulk order import functionality using CSV template.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/import',
+                            'Click "Download Template" button',
+                            'Verify Excel template downloads correctly',
+                            'Open template and verify required columns: Product, Customer Name, Phone, Address, City, Quantity',
+                            'Fill in sample data in template',
+                            'Save the file',
+                            'Click "Upload CSV/Excel" button',
+                            'Select the file and upload',
+                            'Verify validation results display',
+                            'Check for any errors in import',
+                            'Verify successfully imported orders appear in order list'
+                        ]
+                    },
+                    {
+                        id: 'seller-005',
+                        title: 'Import Orders Validation',
+                        description: 'Test that the import process validates data and shows appropriate errors.',
+                        testSteps: [
+                            'Download import template',
+                            'Create CSV with invalid data: missing fields, negative quantity, invalid phone',
+                            'Upload the file',
+                            'Verify validation errors are displayed for each row',
+                            'Fix errors and re-upload',
+                            'Verify successful import',
+                            'Test duplicate order detection (if implemented)'
+                        ]
+                    },
+                    {
+                        id: 'seller-006',
+                        title: 'View Products',
+                        description: 'Test seller\'s ability to view their product catalog.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /catalog or /seller/products',
+                            'Verify only seller\'s products are listed',
+                            'Check product details: name, price, quantity, alert level',
+                            'Verify product images display',
+                            'Identify low stock items with alert badges',
+                            'Test search by product name',
+                            'Test sorting by price or quantity'
+                        ]
+                    },
+                    {
+                        id: 'seller-007',
+                        title: 'Manage Stock',
+                        description: 'Test seller stock management to view and update inventory levels.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/stock',
+                            'Verify all seller products with quantities are displayed',
+                            'Check low stock alert for items below threshold',
+                            'Update quantity for a product',
+                            'Verify update saves successfully',
+                            'Test adding stock movement note',
+                            'Check stock history/log (if available)'
+                        ]
+                    },
+                    {
+                        id: 'seller-008',
+                        title: 'View Stock History/Snapshots',
+                        description: 'Test viewing stock snapshots and inventory changes over time.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/stock',
+                            'Find stock history or snapshots section',
+                            'Select a product',
+                            'View historical stock levels',
+                            'Check stock-in and stock-out records',
+                            'Verify date ranges work correctly',
+                            'Test export stock history to CSV'
+                        ]
+                    },
+                    {
+                        id: 'seller-009',
+                        title: 'Wallet and Balance',
+                        description: 'Test wallet functionality showing seller balance, transactions, and withdrawal requests.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/wallet or /wallet',
+                            'Verify current balance displays',
+                            'Check pending amount (from confirmed but not yet settled orders)',
+                            'View transaction history',
+                            'Verify transaction details: type, amount, date, status',
+                            'Test filtering by date',
+                            'Export transaction history'
+                        ]
+                    },
+                    {
+                        id: 'seller-010',
+                        title: 'Request Payout/Withdrawal',
+                        description: 'Test seller ability to request withdrawal from their wallet.',
+                        testSteps: [
+                            'Login as seller with available balance',
+                            'Navigate to /seller/wallet or /finance',
+                            'Click "Request Withdrawal" or "Payout"',
+                            'Enter withdrawal amount (must be <= available balance)',
+                            'Select withdrawal method (Bank, Mobile Money, etc.)',
+                            'Enter account details',
+                            'Add notes if needed',
+                            'Submit request',
+                            'Verify request appears in pending payouts',
+                            'Verify balance reflects pending withdrawal'
+                        ]
+                    },
+                    {
+                        id: 'seller-011',
+                        title: 'View Invoices',
+                        description: 'Test viewing seller invoices and payment history.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/finance/invoices',
+                            'Verify list of invoices displays',
+                            'Check invoice details: invoice number, date, amount, status',
+                            'Click on an invoice to view full details',
+                            'Click "Download PDF" to get invoice copy',
+                            'Verify paid vs unpaid invoices are distinguished',
+                            'Test filter by status'
+                        ]
+                    },
+                    {
+                        id: 'seller-012',
+                        title: 'Product Analytics',
+                        description: 'Test seller-specific analytics for product performance.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/analytics/products',
+                            'Verify products funnel table displays',
+                            'Check columns: Product Name, Leads, Confirmed, Shipped, Delivered, Returned',
+                            'View confirmation rate per product',
+                            'View delivery rate per product',
+                            'Test sorting by each column',
+                            'Filter by date period (7d, 30d, 90d)',
+                            'Export analytics to CSV'
+                        ]
+                    },
+                    {
+                        id: 'seller-013',
+                        title: 'Team Management',
+                        description: 'Test seller ability to invite and manage sub-users (call center agents).',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/team',
+                            'View list of current team members',
+                            'Click "Invite Agent" button',
+                            'Enter agent email address',
+                            'Select role (CALL_CENTER)',
+                            'Add optional message',
+                            'Send invitation',
+                            'Verify invitation is sent',
+                            'Check that invited agent appears as pending',
+                            'Test deactivating a team member',
+                            'Verify deactivated member cannot login'
+                        ]
+                    },
+                    {
+                        id: 'seller-014',
+                        title: 'Sourcing Requests',
+                        description: 'Test seller ability to create and track product sourcing requests.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/sourcing',
+                            'Click "New Request" tab',
+                            'Enter product name',
+                            'Enter description',
+                            'Upload product images',
+                            'Enter quantity needed',
+                            'Select country of origin',
+                            'Select shipping method (Air, Sea, Land)',
+                            'Submit request',
+                            'Verify request appears with SUBMITTED status',
+                            'Navigate to "My Requests" tab',
+                            'View request status and admin comments',
+                            'Wait for admin approval (simulated)'
+                        ]
+                    },
+                    {
+                        id: 'seller-015',
+                        title: 'Sourcing Request Status Tracking',
+                        description: 'Test tracking sourcing request lifecycle from submission to stocking.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/sourcing',
+                            'View status badges: SUBMITTED (yellow), IN_TRANSIT (blue), RECEIVED (green), STOCKED (purple), REJECTED (red)',
+                            'Click on a request to view details',
+                            'Check admin notes and updates',
+                            'Verify status changes are visible',
+                            'When status is RECEIVED, verify updated stock quantity',
+                            'View received images from admin'
+                        ]
+                    },
+                    {
+                        id: 'seller-016',
+                        title: 'Google Sheets Integration',
+                        description: 'Test connecting and syncing orders with Google Sheets.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/integrations',
+                            'Click "Connect Google Sheets"',
+                            'Authorize with Google account',
+                            'Select spreadsheet from list',
+                            'Select or create sheet/tab',
+                            'Save connection',
+                            'Verify Google Sheet appears in integrations list',
+                            'Check last sync status',
+                            'Click "Sync Now" button',
+                            'Verify orders sync to Google Sheet',
+                            'Test bidirectional sync (update in sheet reflects in app)'
+                        ]
+                    },
+                    {
+                        id: 'seller-017',
+                        title: 'Shopify Integration',
+                        description: 'Test Shopify integration for importing orders from Shopify store.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/integrations',
+                            'Find Shopify section',
+                            'Enter Shopify store URL',
+                            'Generate or enter API key',
+                            'Save integration',
+                            'Click "Import Orders from Shopify"',
+                            'Verify orders from Shopify appear in order list',
+                            'Test automatic sync settings',
+                            'Verify order status updates sync back to Shopify'
+                        ]
+                    },
+                    {
+                        id: 'seller-018',
+                        title: 'Seller Stock Privacy',
+                        description: 'Verify seller can only see their own stock and not other sellers\' inventory.',
+                        testSteps: [
+                            'Login as seller (herve@gaboncod.com)',
+                            'Navigate to /seller/stock',
+                            'Note the products listed (should be Hervé\'s products only)',
+                            'Logout',
+                            'Login as another seller (chancelle@gaboncod.com)',
+                            'Navigate to /seller/stock',
+                            'Verify only Chancelle\'s products are shown',
+                            'Verify no cross-seller data leakage'
+                        ]
+                    },
+                    {
+                        id: 'seller-019',
+                        title: 'API Access',
+                        description: 'Test seller API access for external integrations.',
+                        testSteps: [
+                            'Login as seller',
+                            'Navigate to /seller/api or /api-key',
+                            'Click "Generate API Key"',
+                            'Verify new API key is generated',
+                            'Copy the API key',
+                            'Test making API request using the key (with Postman or curl)',
+                            'Verify request authenticates successfully',
+                            'Test API endpoints: GET /api/orders, POST /api/orders',
+                            'Revoke API key and verify it no longer works'
+                        ]
+                    }
+                ]
+            },
+
+            // ==================== CALL CENTER FEATURES ====================
+            {
+                id: 'callcenter',
+                name: 'Call Center',
+                icon: '📞',
+                category: 'callcenter',
+                features: [
+                    {
+                        id: 'cc-001',
+                        title: 'Call Center Dashboard',
+                        description: 'Verify call center dashboard shows pending order queue and agent performance metrics.',
+                        testSteps: [
+                            'Login as call center agent (merveille@gaboncod.com / agent123)',
+                            'Navigate to /call-center',
+                            'Verify pending order queue displays NEW orders',
+                            'Check order details in queue: customer name, phone, product, address',
+                            'View agent performance metrics: calls made, confirmed, cancelled',
+                            'Verify queue updates in real-time (if Pusher enabled)',
+                            'Test pagination if many orders in queue'
+                        ]
+                    },
+                    {
+                        id: 'cc-002',
+                        title: 'View Order Queue',
+                        description: 'Test viewing and filtering the pending order queue for confirmation.',
+                        testSteps: [
+                            'Login as call center agent',
+                            'Navigate to /call-center',
+                            'View list of NEW orders awaiting confirmation',
+                            'Test filter by seller (if agent assigned to specific seller)',
+                            'Test search by customer name or phone',
+                            'Sort orders by date or priority',
+                            'Click on order to expand details',
+                            'Verify all order information is visible'
+                        ]
+                    },
+                    {
+                        id: 'cc-003',
+                        title: 'Confirm Order',
+                        description: 'Test confirming orders after successful customer call.',
+                        testSteps: [
+                            'Login as call center agent',
+                            'Select an order from the queue',
+                            'Click "Confirm" or "Customer Confirmed" button',
+                            'Add call notes if required',
+                            'Select confirmation date/time',
+                            'Submit confirmation',
+                            'Verify order status changes to CONFIRMED',
+                            'Verify order is removed from queue',
+                            'Check order history logs the confirmation action'
+                        ]
+                    },
+                    {
+                        id: 'cc-004',
+                        title: 'Cancel Order',
+                        description: 'Test cancelling orders when customer refuses or cannot be reached.',
+                        testSteps: [
+                            'Login as call center agent',
+                            'Select an order from the queue',
+                            'Click "Cancel" button',
+                            'Select cancellation reason: Customer Refused, Wrong Number, Not Reachable, Other',
+                            'Enter additional notes for reason',
+                            'Submit cancellation',
+                            'Verify order status changes to CANCELLED',
+                            'Verify order is removed from queue',
+                            'Check that cancelled reason is logged'
+                        ]
+                    },
+                    {
+                        id: 'cc-005',
+                        title: 'Schedule Callback',
+                        description: 'Test scheduling callbacks when customer asks to be called later.',
+                        testSteps: [
+                            'Login as call center agent',
+                            'Select an order from the queue',
+                            'Click "Schedule Callback" button',
+                            'Select callback date and time',
+                            'Add notes about callback (e.g., "Customer busy, call at 5pm")',
+                            'Save callback',
+                            'Verify order is marked with callback status',
+                            'Verify order moves to "Scheduled Callbacks" section',
+                            'Check that callback reminder appears when time comes'
+                        ]
+                    },
+                    {
+                        id: 'cc-006',
+                        title: 'Log Call Attempts',
+                        description: 'Test logging call attempts and their outcomes.',
+                        testSteps: [
+                            'Login as call center agent',
+                            'Select an order',
+                            'Make call to customer',
+                            'After call, log the attempt',
+                            'Select outcome: Reached, No Answer, Wrong Number, Busy',
+                            'Enter call duration if tracked',
+                            'Add notes from conversation',
+                            'Submit log',
+                            'Verify call log appears in order history',
+                            'Check that subsequent attempts show previous calls'
+                        ]
+                    },
+                    {
+                        id: 'cc-007',
+                        title: 'Call Center Performance Dashboard',
+                        description: 'Test viewing agent performance metrics and statistics.',
+                        testSteps: [
+                            'Login as call center agent or admin',
+                            'Navigate to /call-center/performance',
+                            'Verify metrics display: Total Calls, Confirmed, Cancelled, Callbacks Scheduled',
+                            'Check conversion rate: Confirmed / Total Calls',
+                            'View average call duration (if tracked)',
+                            'Test filtering by date period (today, week, month)',
+                            'Compare performance with other agents (if admin view)',
+                            'Export performance report'
+                        ]
+                    },
+                    {
+                        id: 'cc-008',
+                        title: 'Twilio Softphone Integration',
+                        description: 'Test Twilio softphone for making calls directly from the platform.',
+                        testSteps: [
+                            'Ensure Twilio is configured in settings',
+                            'Login as call center agent',
+                            'Navigate to /call-center',
+                            'Locate the softphone panel',
+                            'Click phone number or "Call" button on an order',
+                            'Verify softphone dialing interface appears',
+                            'Make test call to verify connection',
+                            'Check call duration timer',
+                            'End call and verify call is logged',
+                            'Test mute, hold, and transfer buttons (if available)'
+                        ]
+                    },
+                    {
+                        id: 'cc-009',
+                        title: 'Customer Blacklist Check',
+                        description: 'Test that call center agents are alerted when calling blacklisted customers.',
+                        testSteps: [
+                            'Ensure some customers are blacklisted',
+                            'Login as call center agent',
+                            'Navigate to /call-center',
+                            'Look for orders from blacklisted customers',
+                            'Verify blacklisted orders have visual indicator',
+                            'Hover/click to see blacklist reason',
+                            'Test that system warns before calling',
+                            'Verify blacklist notes help agent decide how to proceed'
+                        ]
+                    },
+                    {
+                        id: 'cc-010',
+                        title: 'Seller-Scoped Queue (Sub-User)',
+                        description: 'Verify sub-users (call center agents invited by sellers) only see parent seller\'s orders.',
+                        testSteps: [
+                            'Login as admin and invite agent as sub-user of seller Hervé',
+                            'Logout and login as the invited agent',
+                            'Navigate to /call-center',
+                            'Verify only Hervé\'s NEW orders appear in queue',
+                            'Verify orders from other sellers are not visible',
+                            'Test order confirmation works',
+                            'Verify confirmation only affects Hervé\'s orders'
+                        ]
+                    },
+                    {
+                        id: 'cc-011',
+                        title: 'Bulk Order Confirmation',
+                        description: 'Test confirming multiple orders at once for efficiency.',
+                        testSteps: [
+                            'Login as call center agent',
+                            'Navigate to /call-center',
+                            'Select multiple orders using checkboxes',
+                            'Click "Bulk Confirm" or similar button',
+                            'Verify confirmation dialog appears',
+                            'Select callback notes to apply to all',
+                            'Submit bulk confirmation',
+                            'Verify all selected orders are confirmed',
+                            'Check that each order logs the same confirmation'
+                        ]
+                    },
+                    {
+                        id: 'cc-012',
+                        title: 'Search and Filter Orders',
+                        description: 'Test advanced search and filtering options for the order queue.',
+                        testSteps: [
+                            'Login as call center agent',
+                            'Navigate to /call-center',
+                            'Test search by customer name',
+                            'Test search by phone number',
+                            'Test search by order code',
+                            'Filter by product',
+                            'Filter by city/zone',
+                            'Filter by date range',
+                            'Combine multiple filters',
+                            'Verify results update correctly'
+                        ]
+                    }
+                ]
+            },
+
+            // ==================== DELIVERY FEATURES ====================
+            {
+                id: 'delivery',
+                name: 'Delivery Agent',
+                icon: '🚚',
+                category: 'delivery',
+                features: [
+                    {
+                        id: 'del-001',
+                        title: 'Delivery Dashboard',
+                        description: 'Verify delivery agent dashboard shows assigned orders, route, and collection summary.',
+                        testSteps: [
+                            'Login as delivery agent (jeanclaude@gaboncod.com / delivery123)',
+                            'Navigate to /delivery',
+                            'Verify assigned orders are listed',
+                            'Check order details: customer name, address, phone, product',
+                            'View route map with order locations',
+                            'Check cash to be collected summary',
+                            'Verify order status: CONFIRMED/SHIPPED for assigned orders',
+                            'Test data loads without errors'
+                        ]
+                    },
+                    {
+                        id: 'del-002',
+                        title: 'View Assigned Orders',
+                        description: 'Test viewing all orders assigned to the delivery agent.',
+                        testSteps: [
+                            'Login as delivery agent',
+                            'Navigate to /delivery',
+                            'Verify list of assigned orders displays',
+                            'Check each order shows: customer, address, phone, product, amount',
+                            'Verify order codes are visible',
+                            'Click on order to expand details',
+                            'Test sorting by priority or distance',
+                            'Filter by status (pending, in-transit, delivered)'
+                        ]
+                    },
+                    {
+                        id: 'del-003',
+                        title: 'Start Delivery',
+                        description: 'Test marking an order as "in-transit" to indicate delivery has started.',
+                        testSteps: [
+                            'Login as delivery agent',
+                            'Select an assigned order',
+                            'Click "Start Delivery" button',
+                            'Verify GPS location is captured (if available)',
+                            'Verify order status changes to SHIPPED or IN_TRANSIT',
+                            'Check that start time is logged',
+                            'Verify order moves to "In Progress" section'
+                        ]
+                    },
+                    {
+                        id: 'del-004',
+                        title: 'Mark as Delivered',
+                        description: 'Test completing delivery and marking order as delivered.',
+                        testSteps: [
+                            'Login as delivery agent',
+                            'Select an in-transit order',
+                            'Click "Mark as Delivered" button',
+                            'Enter amount collected from customer',
+                            'Select payment method (Cash, Mobile Money, etc.)',
+                            'Upload proof of delivery photo (if required)',
+                            'Submit delivery',
+                            'Verify order status changes to DELIVERED',
+                            'Verify cash amount is added to collection'
+                        ]
+                    },
+                    {
+                        id: 'del-005',
+                        title: 'Mark as Returned',
+                        description: 'Test marking an order as returned when delivery fails.',
+                        testSteps: [
+                            'Login as delivery agent',
+                            'Select an order',
+                            'Click "Mark as Returned" button',
+                            'Select return reason: Customer Refused, Wrong Address, Not Available, Other',
+                            'Enter detailed notes about return',
+                            'Submit return',
+                            'Verify order status changes to RETURNED',
+                            'Check that return reason is logged',
+                            'Verify order is removed from active deliveries'
+                        ]
+                    },
+                    {
+                        id: 'del-006',
+                        title: 'Capture Proof of Delivery (POD)',
+                        description: 'Test uploading photos and capturing signatures as proof of delivery.',
+                        testSteps: [
+                            'Login as delivery agent',
+                            'Navigate to order details',
+                            'Find POD capture section',
+                            'Click "Take Photo" or "Upload Photo"',
+                            'Select photo from device or capture via camera',
+                            'Click "Capture Signature"',
+                            'Use signature pad for customer signature',
+                            'Submit POD',
+                            'Verify photo uploads successfully',
+                            'Verify signature is saved',
+                            'View saved POD in order history'
+                        ]
+                    },
+                    {
+                        id: 'del-007',
+                        title: 'Cash Collection Summary',
+                        description: 'Test viewing cash collected and amount to be remitted.',
+                        testSteps: [
+                            'Login as delivery agent',
+                            'Navigate to /delivery or /delivery/remittance',
+                            'Check "Cash Collected Today" total',
+                            'Verify amount matches sum of delivered orders',
+                            'Check "Cash to Remit" amount',
+                            'View breakdown of collections by order',
+                            'Filter by date to see historical collections'
+                        ]
+                    },
+                    {
+                        id: 'del-008',
+                        title: 'Submit Remittance',
+                        description: 'Test submitting cash remittance to admin/finance.',
+                        testSteps: [
+                            'Login as delivery agent',
+                            'Navigate to /delivery/remittance',
+                            'Verify cash to remit amount displays',
+                            'Enter amount being remitted (should match collected)',
+                            'Select remittance method (Cash handover, Bank transfer, etc.)',
+                            'Add notes if needed',
+                            'Submit remittance',
+                            'Verify remittance is recorded',
+                            'Check that remittance status is "Pending Approval"',
+                            'View remittance history'
+                        ]
+                    },
+                    {
+                        id: 'del-009',
+                        title: 'GPS Location Sharing',
+                        description: 'Test GPS location sharing for real-time tracking.',
+                        testSteps: [
+                            'Login as delivery agent',
+                            'Navigate to /delivery',
+                            'Enable location sharing if prompted',
+                            'Verify agent location displays on map',
+                            'Start a delivery',
+                            'Verify location updates periodically',
+                            'Test that multiple orders can be tracked',
+                            'Verify location is visible to admin'
+                        ]
+                    },
+                    {
+                        id: 'del-010',
+                        title: 'Waze Navigation Integration',
+                        description: 'Test Waze button for navigation to customer address.',
+                        testSteps: [
+                            'Login as delivery agent',
+                            'Select an assigned order',
+                            'Locate "Navigate" or Waze button',
+                            'Click button',
+                            'Verify Waze app opens with customer address',
+                            'Verify directions are correct',
+                            'Close Waze and return to app',
+                            'Test with multiple orders'
+                        ]
+                    },
+                    {
+                        id: 'del-011',
+                        title: 'Delivery Performance Dashboard',
+                        description: 'Test viewing delivery performance metrics.',
+                        testSteps: [
+                            'Login as delivery agent or admin',
+                            'Navigate to /delivery/performance',
+                            'Verify metrics display: Total Deliveries, Successful, Returned, Pending',
+                            'Check success rate percentage',
+                            'View average delivery time (if tracked)',
+                            'Test filter by date period (today, week, month)',
+                            'View cash collection summary',
+                            'Export performance report'
+                        ]
+                    },
+                    {
+                        id: 'del-012',
+                        title: 'Delivery Route Optimization',
+                        description: 'Test route optimization for efficient delivery planning.',
+                        testSteps: [
+                            'Login as delivery agent',
+                            'Navigate to /delivery',
+                            'Select multiple orders',
+                            'Click "Optimize Route" or similar',
+                            'Verify orders are re-ordered by distance',
+                            'Check route map displays optimized path',
+                            'Verify total distance and estimated time',
+                            'Start following optimized route'
+                        ]
+                    }
+                ]
+            },
+
+            // ==================== INTEGRATIONS ====================
+            {
+                id: 'integrations',
+                name: 'Integrations',
+                icon: '🔗',
+                category: 'integrations',
+                features: [
+                    {
+                        id: 'int-001',
+                        title: 'Google Sheets 2-Way Sync',
+                        description: 'Test bidirectional synchronization between platform orders and Google Sheets.',
+                        testSteps: [
+                            'Login as seller or admin',
+                            'Navigate to integrations page',
+                            'Connect a Google Sheet',
+                            'Perform sync and verify orders appear in sheet',
+                            'Modify an order status in the sheet',
+                            'Sync back to platform',
+                            'Verify status change is reflected in platform',
+                            'Create new row in sheet with order data',
+                            'Sync and verify new order appears',
+                            'Test that conflicts are handled appropriately'
+                        ]
+                    },
+                    {
+                        id: 'int-002',
+                        title: 'Google Sheets Sync Status',
+                        description: 'Test viewing and monitoring Google Sheets sync status.',
+                        testSteps: [
+                            'Login as seller with Google Sheets connected',
+                            'Navigate to /integrations',
+                            'Check sync status indicators: Connected, Last Synced, Status',
+                            'Verify last synced timestamp displays',
+                            'View sync history if available',
+                            'Test manual sync with "Sync Now" button',
+                            'Verify status updates after sync'
+                        ]
+                    },
+                    {
+                        id: 'int-003',
+                        title: 'Carrier Webhook Integration',
+                        description: 'Test receiving webhooks from carrier services (ShipSen, ColisSwift, AfriqueCOD).',
+                        testSteps: [
+                            'Configure carrier webhook URL in carrier dashboard',
+                            'Use test URL: https://your-domain/api/carriers/webhook/[carrier]',
+                            'Trigger test webhook from carrier',
+                            'Verify webhook is received in platform',
+                            'Check order status updates from webhook',
+                            'Test tracking number updates',
+                            'Verify delivery status notifications',
+                            'Test error handling for invalid webhooks'
+                        ]
+                    },
+                    {
+                        id: 'int-004',
+                        title: 'Shopify Order Import',
+                        description: 'Test importing orders from Shopify store.',
+                        testSteps: [
+                            'Login as seller',
+                            'Configure Shopify integration',
+                            'Enter Shopify store credentials',
+                            'Test connection',
+                            'Click "Import Orders"',
+                            'Verify orders from Shopify appear',
+                            'Check order details match Shopify data',
+                            'Test automatic sync (if configured)',
+                            'Verify new Shopify orders auto-import'
+                        ]
+                    },
+                    {
+                        id: 'int-005',
+                        title: 'Shopify Webhook',
+                        description: 'Test Shopify webhook for real-time order updates.',
+                        testSteps: [
+                            'Configure Shopify webhook URL in Shopify admin',
+                            'Use platform webhook endpoint',
+                            'Create test order in Shopify',
+                            'Verify order appears in platform via webhook',
+                            'Check order details are complete',
+                            'Test order cancellation webhook',
+                            'Verify cancelled orders are marked correctly'
+                        ]
+                    },
+                    {
+                        id: 'int-006',
+                        title: 'Twilio SMS Notifications',
+                        description: 'Test sending SMS notifications via Twilio.',
+                        testSteps: [
+                            'Configure Twilio credentials in settings',
+                            'Create an order or trigger notification event',
+                            'Verify SMS is sent to customer phone',
+                            'Check SMS content: order confirmation, delivery notification, etc.',
+                            'Test different notification types',
+                            'Verify failed SMS handling',
+                            'Check SMS logs in settings'
+                        ]
+                    },
+                    {
+                        id: 'int-007',
+                        title: 'Twilio Voice Calls',
+                        description: 'Test Twilio voice integration for call center.',
+                        testSteps: [
+                            'Configure Twilio voice in settings',
+                            'Login as call center agent',
+                            'Navigate to an order with phone number',
+                            'Click call button in softphone',
+                            'Verify call connects via Twilio',
+                            'Test call quality',
+                            'End call and verify call is logged',
+                            'Check call duration and recording (if enabled)'
+                        ]
+                    },
+                    {
+                        id: 'int-008',
+                        title: 'Twilio WhatsApp Messages',
+                        description: 'Test sending WhatsApp messages via Twilio.',
+                        testSteps: [
+                            'Configure Twilio WhatsApp number in settings',
+                            'Enable WhatsApp notifications',
+                            'Trigger an order event',
+                            'Verify WhatsApp message is sent',
+                            'Check message content and formatting',
+                            'Test customer replies (if 2-way enabled)',
+                            'Verify WhatsApp messages are logged'
+                        ]
+                    },
+                    {
+                        id: 'int-009',
+                        title: 'Pusher Real-Time Updates',
+                        description: 'Test Pusher for real-time notifications and updates.',
+                        testSteps: [
+                            'Configure Pusher in settings',
+                            'Login as call center agent on one browser tab',
+                            'Login as admin on another tab',
+                            'Admin updates an order status',
+                            'Verify call center tab updates automatically without refresh',
+                            'Test order queue updates in real-time',
+                            'Test delivery assignment notifications',
+                            'Verify push notification appears (if browser permission granted)'
+                        ]
+                    },
+                    {
+                        id: 'int-010',
+                        title: 'Cloudinary Image Upload',
+                        description: 'Test uploading images via Cloudinary.',
+                        testSteps: [
+                            'Ensure Cloudinary is configured',
+                            'Login as seller or admin',
+                            'Navigate to create/edit product',
+                            'Click upload image button',
+                            'Select image file from device',
+                            'Verify image uploads to Cloudinary',
+                            'Check that preview displays correctly',
+                            'Save and verify image URL is stored',
+                            'Test multiple image uploads'
+                        ]
+                    },
+                    {
+                        id: 'int-011',
+                        title: 'Lightfunnels Webhook',
+                        description: 'Test Lightfunnels integration webhook.',
+                        testSteps: [
+                            'Configure webhook URL in Lightfunnels dashboard',
+                            'Create test order in Lightfunnels',
+                            'Verify order appears in platform',
+                            'Check order details match',
+                            'Test customer data mapping',
+                            'Verify product information syncs correctly'
+                        ]
+                    },
+                    {
+                        id: 'int-012',
+                        title: 'YouCan Store Webhook',
+                        description: 'Test YouCan store integration webhook.',
+                        testSteps: [
+                            'Configure webhook URL in YouCan dashboard',
+                            'Create test order in YouCan',
+                            'Verify order appears in platform',
+                            'Check order status syncs',
+                            'Verify order details are complete',
+                            'Test inventory sync from YouCan'
+                        ]
+                    },
+                    {
+                        id: 'int-013',
+                        title: 'Dropify Integration',
+                        description: 'Test Dropify platform integration.',
+                        testSteps: [
+                            'Configure Dropify webhook',
+                            'Test order import from Dropify',
+                            'Verify order details sync correctly',
+                            'Test product mapping',
+                            'Check customer data handling'
+                        ]
+                    },
+                    {
+                        id: 'int-014',
+                        title: 'PDF Invoice Generation',
+                        description: 'Test PDF invoice generation using jsPDF.',
+                        testSteps: [
+                            'Login as admin or seller',
+                            'Navigate to invoices or order details',
+                            'Click "Generate PDF Invoice"',
+                            'Verify PDF downloads',
+                            'Open PDF and verify content: invoice number, date, seller details, order items, total',
+                            'Check company logo appears (if configured)',
+                            'Verify formatting is correct',
+                            'Test for different order sizes'
+                        ]
+                    },
+                    {
+                        id: 'int-015',
+                        title: 'Excel Export',
+                        description: 'Test exporting data to Excel format.',
+                        testSteps: [
+                            'Login as admin or seller',
+                            'Navigate to orders or analytics',
+                            'Click "Export to Excel" button',
+                            'Verify Excel file downloads',
+                            'Open file and verify data integrity',
+                            'Check column headers match table',
+                            'Verify data includes filters applied',
+                            'Test with large datasets'
+                        ]
+                    },
+                    {
+                        id: 'int-016',
+                        title: 'CSV Export',
+                        description: 'Test exporting data to CSV format.',
+                        testSteps: [
+                            'Login as admin or seller',
+                            'Navigate to orders, stock, or analytics',
+                            'Click "Export to CSV" button',
+                            'Verify CSV file downloads',
+                            'Open file in Excel or text editor',
+                            'Verify data is properly delimited',
+                            'Check for encoding issues',
+                            'Test with special characters in data'
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // State management
+        let featureStates = {};
+        let currentFilter = 'all';
+
+        // Initialize
+        function init() {
+            loadStates();
+            renderChecklist();
+            renderNav();
+            updateStats();
+        }
+
+        // Load states from localStorage
+        function loadStates() {
+            const saved = localStorage.getItem('gabonCodTestStates');
+            if (saved) {
+                featureStates = JSON.parse(saved);
+            } else {
+                // Initialize all as pending
+                features.forEach(section => {
+                    section.features.forEach(feature => {
+                        featureStates[feature.id] = {
+                            status: 'pending',
+                            notes: ''
+                        };
+                    });
+                });
+            }
+        }
+
+        // Save states to localStorage
+        function saveStates() {
+            localStorage.setItem('gabonCodTestStates', JSON.stringify(featureStates));
+        }
+
+        // Render the checklist
+        function renderChecklist() {
+            const container = document.getElementById('checklistContent');
+            container.innerHTML = '';
+
+            features.forEach((section, sectionIndex) => {
+                const sectionFeatures = section.features.filter(f =>
+                    currentFilter === 'all' || f.category === currentFilter
+                );
+
+                if (sectionFeatures.length === 0) return;
+
+                const sectionEl = document.createElement('div');
+                sectionEl.className = 'checklist-section';
+                sectionEl.id = `section-${section.id}`;
+
+                const progress = calculateSectionProgress(sectionFeatures);
+
+                sectionEl.innerHTML = `
+                    <div class="section-header" onclick="toggleSection(${sectionIndex})">
+                        <div class="section-icon ${section.category}">${section.icon}</div>
+                        <div class="section-title">
+                            <h2>${section.name}</h2>
+                            <span class="section-badge">${sectionFeatures.length} tests</span>
+                        </div>
+                        <div class="section-progress">
+                            <svg width="50" height="50">
+                                <circle class="bg" cx="25" cy="25" r="20"></circle>
+                                <circle class="progress" cx="25" cy="25" r="20"
+                                    stroke-dashoffset="${126 - (126 * progress / 100)}"></circle>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="section-content open" id="content-${section.id}">
+                        ${sectionFeatures.map(feature => renderFeature(feature)).join('')}
+                    </div>
+                `;
+
+                container.appendChild(sectionEl);
+            });
+        }
+
+        // Render individual feature
+        function renderFeature(feature) {
+            const state = featureStates[feature.id] || { status: 'pending', notes: '' };
+
+            return `
+                <div class="feature-item" id="feature-${feature.id}">
+                    <div class="feature-header" onclick="toggleFeature('${feature.id}')">
+                        <div class="feature-checkbox ${state.status}" onclick="event.stopPropagation(); toggleFeatureStatus('${feature.id}', 'pass')"></div>
+                        <div class="feature-info">
+                            <div class="feature-title">
+                                ${feature.title}
+                                <button class="expand-btn" onclick="event.stopPropagation(); toggleFeature('${feature.id}')">▼</button>
+                            </div>
+                            <p class="feature-description">${feature.description}</p>
+                            <div class="test-steps" id="steps-${feature.id}">
+                                <h4>Test Steps:</h4>
+                                <ol>
+                                    ${feature.testSteps.map(step => `<li>${step}</li>`).join('')}
+                                </ol>
+                            </div>
+                            <textarea class="notes-input" id="notes-${feature.id}"
+                                placeholder="Add testing notes here..."
+                                onchange="saveNotes('${feature.id}', this.value)">${state.notes}</textarea>
+                            <div class="feature-actions" style="margin-top: 15px;">
+                                <button class="action-btn pass" onclick="event.stopPropagation(); toggleFeatureStatus('${feature.id}', 'pass')">
+                                    ✓ Pass
+                                </button>
+                                <button class="action-btn fail" onclick="event.stopPropagation(); toggleFeatureStatus('${feature.id}', 'fail')">
+                                    ✗ Fail
+                                </button>
+                                <button class="action-btn reset" onclick="event.stopPropagation(); toggleFeatureStatus('${feature.id}', 'pending')">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render navigation sidebar
+        function renderNav() {
+            const nav = document.getElementById('navItems');
+            nav.innerHTML = features.map((section, index) => {
+                const progress = calculateSectionProgress(section.features);
+                return `
+                    <div class="nav-item ${currentFilter === 'all' || section.category === currentFilter ? '' : 'hidden'}"
+                         onclick="scrollToSection(${index})">
+                        <span class="status-indicator ${progress === 100 ? 'completed' : progress > 0 ? 'in-progress' : 'not-started'}"></span>
+                        ${section.icon} ${section.name} (${progress}%)
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Calculate section progress
+        function calculateSectionProgress(sectionFeatures) {
+            if (sectionFeatures.length === 0) return 0;
+            const completed = sectionFeatures.filter(f =>
+                featureStates[f.id]?.status === 'pass'
+            ).length;
+            return Math.round((completed / sectionFeatures.length) * 100);
+        }
+
+        // Toggle section expand/collapse
+        function toggleSection(index) {
+            const section = features[index];
+            const content = document.getElementById(`content-${section.id}`);
+            content.classList.toggle('open');
+        }
+
+        // Toggle feature steps visibility
+        function toggleFeature(featureId) {
+            const steps = document.getElementById(`steps-${featureId}`);
+            steps.classList.toggle('hidden');
+        }
+
+        // Toggle feature status
+        function toggleFeatureStatus(featureId, status) {
+            featureStates[featureId] = {
+                ...featureStates[featureId],
+                status: status
+            };
+            saveStates();
+            updateUI();
+        }
+
+        // Save notes
+        function saveNotes(featureId, notes) {
+            featureStates[featureId] = {
+                ...featureStates[featureId],
+                notes: notes
+            };
+            saveStates();
+        }
+
+        // Update all UI elements
+        function updateUI() {
+            renderChecklist();
+            renderNav();
+            updateStats();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const allFeatures = features.flatMap(s => s.features);
+            const total = allFeatures.length;
+            const passed = Object.values(featureStates).filter(s => s.status === 'pass').length;
+            const failed = Object.values(featureStates).filter(s => s.status === 'fail').length;
+            const pending = total - passed - failed;
+
+            document.getElementById('passedCount').textContent = passed;
+            document.getElementById('failedCount').textContent = failed;
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('totalCount').textContent = total;
+
+            const percentage = Math.round((passed / total) * 100);
+            document.getElementById('progressFill').textContent = `${percentage}%`;
+            document.getElementById('progressFill').style.width = `${percentage}%`;
+        }
+
+        // Filter features by category
+        function filterFeatures(category) {
+            currentFilter = category;
+
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            updateUI();
+        }
+
+        // Reset all states
+        function resetAll() {
+            if (confirm('Are you sure you want to reset all test results?')) {
+                features.forEach(section => {
+                    section.features.forEach(feature => {
+                        featureStates[feature.id] = {
+                            status: 'pending',
+                            notes: ''
+                        };
+                    });
+                });
+                saveStates();
+                updateUI();
+            }
+        }
+
+        // Expand all sections
+        function expandAll() {
+            document.querySelectorAll('.section-content').forEach(el => {
+                el.classList.add('open');
+            });
+        }
+
+        // Collapse all sections
+        function collapseAll() {
+            document.querySelectorAll('.section-content').forEach(el => {
+                el.classList.remove('open');
+            });
+        }
+
+        // Scroll to section
+        function scrollToSection(index) {
+            const section = features[index];
+            const el = document.getElementById(`section-${section.id}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const content = document.getElementById(`content-${section.id}`);
+                content.classList.add('open');
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
