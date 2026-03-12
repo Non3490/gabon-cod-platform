@@ -61,10 +61,8 @@ import {
   Legend,
   Line,
   ReferenceLine
-}
 } from 'recharts'
 import { cn } from '@/lib/utils'
-import { Switch } from '@/components/ui/switch'
 
 interface DashboardData {
   stats: {
@@ -216,7 +214,7 @@ export default function AdminDashboard() {
 
   if (userLoading || loading) {
     return (
-      <DashboardLayout user={user as any}>
+      <DashboardLayout user={user || { id: '', email: '', name: '', role: 'ADMIN' }}>
         <div className="space-y-6 pb-10">
           {/* Skeleton KPI Cards */}
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5">
