@@ -71,9 +71,15 @@ export default function SellerIntegrationsPage() {
 
   useEffect(() => {
     if (userLoading) return
-    if (!user) { router.push('/login'); return }
-    if (user.role !== 'SELLER' && user.role !== 'ADMIN') { router.push('/unauthorized'); return }
-  }, [user, userLoading, router])
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+    if (user.role !== 'SELLER' && user.role !== 'ADMIN') {
+      window.location.href = '/unauthorized'
+      return
+    }
+  }, [user, userLoading])
 
   const loadData = async () => {
     if (!user) return
@@ -159,7 +165,7 @@ export default function SellerIntegrationsPage() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Test failed')
     } finally {
-setTestingSheet(s => ({ ...s, [id]: false });)
+      setTestingSheet(s => ({ ...s, [id]: false }))
     }
   }
 
@@ -193,7 +199,7 @@ setTestingSheet(s => ({ ...s, [id]: false });)
       ))
       toast.error(error instanceof Error ? error.message : 'Sync failed')
     } finally {
-setSyncingSheet(s => ({ ...s, [id]: false });
+      setSyncingSheet(s => ({ ...s, [id]: false }))
     }
   }
 
@@ -206,7 +212,13 @@ setSyncingSheet(s => ({ ...s, [id]: false });
     } catch { toast.error('Failed to remove') }
   }
 
-  if (userLoading || !user) return null
+  if (userLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
 
   return (
     <DashboardLayout user={user}>

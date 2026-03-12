@@ -33,7 +33,7 @@ import {
   Key,
   TrendingUp,
 } from 'lucide-react'
-import { roleLabels, type UserRole } from '@/lib/auth-types'
+import { roleLabels, type UserRole } from '@/types/auth-types'
 
 interface SidebarProps {
   user: {

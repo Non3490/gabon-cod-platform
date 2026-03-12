@@ -131,141 +131,141 @@ const InvoiceDocument = ({ invoice, seller, orders = [] }: InvoiceDocumentProps)
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>INVOICE</Text>
-        <Text style={styles.subtitle}>{invoice.ref}</Text>
-        <Text style={styles.subtitle}>
-          Date: {new Date(invoice.createdAt).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
-        </Text>
-        <View style={{ marginTop: 10 }}>
-          <Text style={styles.badgePaid}>
-            {invoice.cycleType === 'DELIVERY' ? 'DELIVERY REMITTANCE' : 'SELLER PAYOUT'}
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>INVOICE</Text>
+          <Text style={styles.subtitle}>{invoice.ref}</Text>
+          <Text style={styles.subtitle}>
+            Date: {new Date(invoice.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
           </Text>
-        </View>
-      </View>
-
-      {/* Bill To */}
-      <View style={styles.section}>
-        <Text style={styles.heading}>Bill To:</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Name:</Text>
-          <Text style={styles.value}>{invoice.deliveryMan?.name || seller?.name || 'N/A'}</Text>
-        </View>
-        {invoice.cycleType === 'SELLER' && seller && (
-          <>
-            <View style={styles.row}>
-              <Text style={styles.label}>Email:</Text>
-              <Text style={styles.value}>{seller.email}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Phone:</Text>
-              <Text style={styles.value}>{seller.phone || 'N/A'}</Text>
-            </View>
-          </>
-        )}
-      </View>
-
-      {/* Invoice Details */}
-      <View style={styles.section}>
-        <Text style={styles.heading}>Invoice Details:</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Period:</Text>
-          <Text style={styles.value}>
-            {new Date(invoice.dateFrom).toLocaleDateString()} - {new Date(invoice.dateTo).toLocaleDateString()}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Status:</Text>
-          <Text style={[
-            styles.badge,
-            invoice.status === 'PAID' ? styles.badgePaid : styles.badgeUnpaid
-          ]}>
-            {invoice.status}
-          </Text>
-        </View>
-      </View>
-
-      {/* Order Summary Table */}
-      {orders.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.heading}>Order Summary:</Text>
-          <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={styles.tableCellSmall}>#</Text>
-              <Text style={styles.tableCell}>Order Code</Text>
-              <Text style={styles.tableCell}>Customer</Text>
-              <Text style={styles.tableCellSmall}>Fee</Text>
-              <Text style={styles.tableCellMedium}>Amount</Text>
-            </View>
-            {orders.slice(0, 20).map((order, i) => (
-              <View key={i} style={styles.tableRow}>
-                <Text style={styles.tableCellSmall}>{i + 1}</Text>
-                <Text style={styles.tableCell}>{order.trackingNumber}</Text>
-                <Text style={styles.tableCell}>{order.recipientName}</Text>
-                <Text style={styles.tableCellSmall}>{invoice.cycleType === 'SELLER' ? `${(order.platformFee || 0).toFixed(0)}` : '-'}</Text>
-                <Text style={styles.tableCellMedium}>{order.codAmount.toFixed(2)} XAF</Text>
-              </View>
-            ))}
-            {orders.length > 20 && (
-              <View style={styles.tableRow}>
-                <Text style={[styles.tableCell, { fontStyle: 'italic', color: '#6b7280' }]}>
-                  + {orders.length - 20} more orders...
-                </Text>
-              </View>
-            )}
+          <View style={{ marginTop: 10 }}>
+            <Text style={styles.badgePaid}>
+              {invoice.cycleType === 'DELIVERY' ? 'DELIVERY REMITTANCE' : 'SELLER PAYOUT'}
+            </Text>
           </View>
         </View>
-      )}
 
-      {/* Summary */}
-      <View style={styles.section}>
-        <Text style={styles.heading}>Summary:</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Cash Collected:</Text>
-          <Text style={styles.value}>{invoice.cashCollected.toFixed(2)} XAF</Text>
+        {/* Bill To */}
+        <View style={styles.section}>
+          <Text style={styles.heading}>Bill To:</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Name:</Text>
+            <Text style={styles.value}>{invoice.deliveryMan?.name || seller?.name || 'N/A'}</Text>
+          </View>
+          {invoice.cycleType === 'SELLER' && seller && (
+            <>
+              <View style={styles.row}>
+                <Text style={styles.label}>Email:</Text>
+                <Text style={styles.value}>{seller.email}</Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Phone:</Text>
+                <Text style={styles.value}>{seller.phone || 'N/A'}</Text>
+              </View>
+            </>
+          )}
         </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Refunded:</Text>
-          <Text style={styles.value}>{invoice.refundedAmount.toFixed(2)} XAF</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Subtotal:</Text>
-          <Text style={styles.value}>{invoice.subtotal.toFixed(2)} XAF</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>VAT:</Text>
-          <Text style={styles.value}>{invoice.vat.toFixed(2)} XAF</Text>
-        </View>
-      </View>
 
-      {/* Total */}
-      <View style={styles.total}>
-        <Text style={styles.totalLabel}>Total Net:</Text>
-        <Text style={styles.totalValue}>{invoice.totalNet.toFixed(2)} XAF</Text>
-      </View>
+        {/* Invoice Details */}
+        <View style={styles.section}>
+          <Text style={styles.heading}>Invoice Details:</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Period:</Text>
+            <Text style={styles.value}>
+              {new Date(invoice.dateFrom).toLocaleDateString()} - {new Date(invoice.dateTo).toLocaleDateString()}
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Status:</Text>
+            <Text style={[
+              styles.badge,
+              invoice.status === 'PAID' ? styles.badgePaid : styles.badgeUnpaid
+            ]}>
+              {invoice.status}
+            </Text>
+          </View>
+        </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text>
-          Generated on {new Date().toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          })}
-        </Text>
-        <Text style={{ marginTop: 5 }}>
-          Gabon COD Platform - {invoice.cycleType === 'DELIVERY' ? 'Delivery Remittance Invoice' : 'Seller Payout Invoice'}
-        </Text>
-      </View>
-    </Page>
-  </Document>
+        {/* Order Summary Table */}
+        {orders.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.heading}>Order Summary:</Text>
+            <View style={styles.table}>
+              <View style={styles.tableHeader}>
+                <Text style={styles.tableCellSmall}>#</Text>
+                <Text style={styles.tableCell}>Order Code</Text>
+                <Text style={styles.tableCell}>Customer</Text>
+                <Text style={styles.tableCellSmall}>Fee</Text>
+                <Text style={styles.tableCellMedium}>Amount</Text>
+              </View>
+              {orders.slice(0, 20).map((order, i) => (
+                <View key={i} style={styles.tableRow}>
+                  <Text style={styles.tableCellSmall}>{i + 1}</Text>
+                  <Text style={styles.tableCell}>{order.trackingNumber}</Text>
+                  <Text style={styles.tableCell}>{order.recipientName}</Text>
+                  <Text style={styles.tableCellSmall}>{invoice.cycleType === 'SELLER' ? `${(order.platformFee || 0).toFixed(0)}` : '-'}</Text>
+                  <Text style={styles.tableCellMedium}>{order.codAmount.toFixed(2)} XAF</Text>
+                </View>
+              ))}
+              {orders.length > 20 && (
+                <View style={styles.tableRow}>
+                  <Text style={[styles.tableCell, { fontStyle: 'italic', color: '#6b7280' }]}>
+                    + {orders.length - 20} more orders...
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* Summary */}
+        <View style={styles.section}>
+          <Text style={styles.heading}>Summary:</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Cash Collected:</Text>
+            <Text style={styles.value}>{invoice.cashCollected.toFixed(2)} XAF</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Refunded:</Text>
+            <Text style={styles.value}>{invoice.refundedAmount.toFixed(2)} XAF</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Subtotal:</Text>
+            <Text style={styles.value}>{invoice.subtotal.toFixed(2)} XAF</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>VAT:</Text>
+            <Text style={styles.value}>{invoice.vat.toFixed(2)} XAF</Text>
+          </View>
+        </View>
+
+        {/* Total */}
+        <View style={styles.total}>
+          <Text style={styles.totalLabel}>Total Net:</Text>
+          <Text style={styles.totalValue}>{invoice.totalNet.toFixed(2)} XAF</Text>
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text>
+            Generated on {new Date().toLocaleString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </Text>
+          <Text style={{ marginTop: 5 }}>
+            Gabon COD Platform - {invoice.cycleType === 'DELIVERY' ? 'Delivery Remittance Invoice' : 'Seller Payout Invoice'}
+          </Text>
+        </View>
+      </Page>
+    </Document>
   )
 }
 

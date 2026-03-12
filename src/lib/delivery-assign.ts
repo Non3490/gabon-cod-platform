@@ -80,13 +80,18 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 
 /**
  * Get all delivery men in a specific zone (or all if no zone)
+ * Only includes drivers that are currently online
  */
 async function getDeliveryMenInZone(zoneId?: string | null): Promise<DeliveryManLocation[]> {
+  // Get all delivery men in zone who are online and active
   const drivers = await db.user.findMany({
     where: {
       role: 'DELIVERY_MAN',
       isActive: true,
-      zoneId: zoneId || undefined
+      zoneId: zoneId || undefined,
+      agentSession: {
+        isOnline: true
+      }
     },
     select: {
       id: true,

@@ -230,22 +230,24 @@ export default function AdminDashboard() {
     custom: 'Custom'
   }
 
-  const cityChartData = Object.entries(data.cityStats)
-    .map(([city, stats]) => ({
-      city,
-      total: stats.total,
-      delivered: stats.delivered
-    }))
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 6)
+  const cityChartData = data?.cityStats
+    ? Object.entries(data.cityStats)
+        .map(([city, stats]) => ({
+          city,
+          total: stats.total,
+          delivered: stats.delivered
+        }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 6)
+    : []
 
   const statusChartData = [
-    { name: 'New', value: data.stats.newOrders, color: '#f59e0b' },
-    { name: 'Confirmed', value: data.stats.confirmedOrders, color: '#3b82f6' },
-    { name: 'Shipped', value: data.stats.shippedOrders, color: '#6366f1' },
-    { name: 'Delivered', value: data.stats.deliveredOrders, color: '#10b981' },
-    { name: 'Returned', value: data.stats.returnedOrders, color: '#ef4444' },
-    { name: 'Cancelled', value: data.stats.cancelledOrders, color: '#64748b' }
+    { name: 'New', value: data?.stats?.newOrders ?? 0, color: '#f59e0b' },
+    { name: 'Confirmed', value: data?.stats?.confirmedOrders ?? 0, color: '#3b82f6' },
+    { name: 'Shipped', value: data?.stats?.shippedOrders ?? 0, color: '#6366f1' },
+    { name: 'Delivered', value: data?.stats?.deliveredOrders ?? 0, color: '#10b981' },
+    { name: 'Returned', value: data?.stats?.returnedOrders ?? 0, color: '#ef4444' },
+    { name: 'Cancelled', value: data?.stats?.cancelledOrders ?? 0, color: '#64748b' }
   ].filter(d => d.value > 0)
 
   return (

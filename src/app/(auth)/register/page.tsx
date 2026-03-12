@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Package, Eye, EyeOff } from 'lucide-react'
-import { roleLabels, type UserRole } from '@/lib/auth-types'
+import { roleLabels, type UserRole } from '@/types/auth-types'
 
 const roles: UserRole[] = ['SELLER', 'CALL_CENTER', 'DELIVERY']
 

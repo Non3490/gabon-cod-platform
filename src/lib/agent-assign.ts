@@ -21,7 +21,7 @@ interface PriorityScore {
  * @param parentSellerId - If provided, filter orders to only this seller (for sub-users)
  */
 export async function getPriorityQueue(parentSellerId?: string | null): Promise<PriorityScore[]> {
-  // Get all NEW orders (filtered by parentSellerId if provided)
+  // Get all NEW orders - CALL_CENTER agents see ALL sellers' orders
   const now = new Date()
   const whereClause: any = {
     status: 'NEW',
@@ -31,10 +31,8 @@ export async function getPriorityQueue(parentSellerId?: string | null): Promise<
     ]
   }
 
-  // Filter orders by parentSellerId for sub-users
-  if (parentSellerId) {
-    whereClause.sellerId = parentSellerId
-  }
+  // NOTE: parentSellerId is NOT used for CALL_CENTER role
+  // Unified Agent View: agents see all sellers' NEW orders regardless of parentSellerId
 
   const orders = await db.order.findMany({
     where: whereClause,

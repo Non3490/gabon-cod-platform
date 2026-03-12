@@ -6,6 +6,7 @@ import { creditWallet } from '@/lib/wallet-service'
 import { logActivity } from '@/lib/activity-logger'
 import { syncOrderStatusToConnectedSheets } from '@/lib/sheets-sync-helper'
 import { broadcastOrderUpdate, QUEUE_EVENTS } from '@/lib/pusher'
+import { runAutoFlagCheckAfterOrderUpdate } from '@/lib/blacklist-service'
 
 // GET /api/orders/[id]
 export async function GET(
@@ -226,6 +227,13 @@ export async function PATCH(
 
     logActivity(user.id, user.role, 'ORDER_STATUS_UPDATE', `Order ${id}: ${existing.status} → ${status ?? existing.status}`).catch(() => {})
 
+    // Auto-flag customer if they meet blacklist criteria
+    if (status && status !== existing.status && (status === 'CONFIRMED' || status === 'DELIVERED' || status === 'RETURNED')) {
+      runAutoFlagCheckAfterOrderUpdate(order.phone).catch(err => {
+        console.error('Failed to run auto-flag check:', err)
+      })
+    }
+
     // Auto-sync order status to Google Sheets (write-back)
     if (status && status !== existing.status) {
       syncOrderStatusToConnectedSheets(existing.sellerId, order.trackingNumber, status).catch(err => {
@@ -255,7 +263,16 @@ export async function PATCH(
       })
     }
 
-    return NextResponse.json({ order })
+    // Strip cost-related fields for CALL_CENTER role
+    const responseOrder: Record<string, unknown> = { ...order }
+    if (user.role === 'CALL_CENTER') {
+      delete responseOrder.productCost
+      delete responseOrder.shippingCost
+      delete responseOrder.callCenterFee
+      delete responseOrder.adSpend
+    }
+
+    return NextResponse.json({ order: responseOrder })
   } catch (error) {
     console.error('Update order error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

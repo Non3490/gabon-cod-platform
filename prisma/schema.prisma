@@ -1,12 +1,12 @@
 // Gabon COD Platform — Prisma Schema v3
-// Dev: SQLite | Prod: PostgreSQL (swap provider + url in env)
+// Dev: SQLite | Prod: PostgreSQL
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

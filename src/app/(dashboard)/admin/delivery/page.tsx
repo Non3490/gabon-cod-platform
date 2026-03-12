@@ -130,7 +130,10 @@ export default function AdminDeliveryOverviewPage() {
   const [savingFee, setSavingFee] = useState(false)
 
   useEffect(() => {
-    if (!userLoading && (!user || user.role !== 'ADMIN')) router.push('/login')
+    if (userLoading) return
+    if (!user) { router.push('/login'); return }
+    if (user.role !== 'ADMIN') { router.push('/unauthorized'); return }
+    fetchData()
   }, [user, userLoading, router])
 
   const fetchData = useCallback(async () => {

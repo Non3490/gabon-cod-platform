@@ -97,7 +97,7 @@ export default function FinancePage() {
   const [dailyData, setDailyData] = useState<DailyData[]>([])
   const [expenses, setExpenses] = useState<ExpenseData[]>([])
   const [loading, setLoading] = useState(true)
-  const [period, setPeriod] = useState<'today' | '7d' | '30d' | '90d' | 'custom'>('7d')
+  const [period, setPeriod] = useState<'today' | '7d' | '30d' | 'custom'>('30d')
   const [customStartDate, setCustomStartDate] = useState('')
   const [customEndDate, setCustomEndDate] = useState('')
   const [compareWithPreviousPeriod, setCompareWithPreviousPeriod] = useState(false)
@@ -134,7 +134,7 @@ export default function FinancePage() {
         }
       } else if (compareWithPreviousPeriod) {
         // Calculate previous period for preset periods
-        const periodDays = period === 'today' ? 1 : period === '7d' ? 7 : period === '30d' ? 30 : 90
+        const periodDays = period === 'today' ? 1 : period === '7d' ? 7 : 30
         const now = new Date()
         const periodStart = new Date(now)
         periodStart.setDate(now.getDate() - periodDays)
@@ -145,7 +145,7 @@ export default function FinancePage() {
         if (period === 'today') {
           previousQueryParams = `period=custom&startDate=${prevStart.toISOString().split('T')[0]}&endDate=${prevEnd.toISOString().split('T')[0]}`
         } else {
-          // For 7d, 30d, 90d, use the period value with adjusted start date
+          // For 7d, 30d, use the period value with adjusted start date
           // This is handled by the API's logic, so we use the same period value
           const prevPeriodStart = new Date(now)
           prevPeriodStart.setDate(now.getDate() - (periodDays * 2))
@@ -297,7 +297,6 @@ export default function FinancePage() {
                 <SelectItem value="today">Today</SelectItem>
                 <SelectItem value="7d">Last 7 Days</SelectItem>
                 <SelectItem value="30d">Last 30 Days</SelectItem>
-                <SelectItem value="90d">Last 90 Days</SelectItem>
                 <SelectItem value="custom">Custom Range</SelectItem>
               </SelectContent>
             </Select>

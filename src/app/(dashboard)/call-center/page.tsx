@@ -9,6 +9,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -119,7 +126,6 @@ const statusConfig: Record<string, { label: string; icon: React.ReactNode; color
 export default function CallCenterPage() {
   const router = useRouter()
   const { user, loading: userLoading } = useUser()
-  const { callStatus } = useSoftphone()
 
   const [orders, setOrders] = useState<Order[]>([])
   const [callLogs, setCallLogs] = useState<CallLog[]>([])
@@ -348,329 +354,360 @@ export default function CallCenterPage() {
 
   if (!user || (user.role !== 'ADMIN' && user.role !== 'CALL_CENTER')) return null
 
-  return (
-    <SoftphoneProvider>
-      <DashboardLayout user={user}>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                <PhoneCall className="h-6 w-6" />Call Center
-              </h1>
-              <p className="text-muted-foreground text-sm">Confirm orders and manage customer calls</p>
-            </div>
-            <div className="flex gap-2">
-              {user.role === 'CALL_CENTER' && (
-                <Button variant="outline" size="sm" onClick={fetchData}>
-                  <RefreshCcw className="h-4 w-4" />Refresh
-                </Button>
-              )}
-            </div>
+  // Inner component that uses useSoftphone hook
+  function CallCenterContent() {
+    const { callStatus } = useSoftphone()
+
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+              <PhoneCall className="h-6 w-6" />Call Center
+            </h1>
+            <p className="text-muted-foreground text-sm">Confirm orders and manage customer calls</p>
           </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Pending</p>
-                    <p className="text-2xl font-bold">{orders.length}</p>
-                  </div>
-                  <Phone className="h-8 w-8 text-yellow-600" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Confirmed Today</p>
-                    <p className="text-2xl font-bold text-green-600">{stats.confirmed}</p>
-                  </div>
-                  <CheckCircle className="h-8 w-8 text-green-500" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Cancelled Today</p>
-                    <p className="text-2xl font-bold text-red-600">{stats.cancelled}</p>
-                  </div>
-                  <XCircle className="h-8 w-8 text-red-500" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Calls</p>
-                    <p className="text-2xl font-bold">{stats.totalCalls}</p>
-                  </div>
-                  <PhoneCall className="h-8 w-8 text-blue-600" />
-                </div>
-              </CardContent>
-            </Card>
+          <div className="flex gap-2">
+            {user.role === 'CALL_CENTER' && (
+              <Button variant="outline" size="sm" onClick={fetchData}>
+                <RefreshCcw className="h-4 w-4" />Refresh
+              </Button>
+            )}
           </div>
+        </div>
 
-          {/* Active Call Panel */}
-          {callStatus !== 'idle' && selectedOrder && (
-            <ActiveCallPanel
-              customerName={selectedOrder.customerName}
-              phone={selectedOrder.customerPhone}
-              orderCode={selectedOrder.trackingNumber}
-            />
-          )}
-
-          {/* Orders Queue */}
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Call Queue ({orders.length})</CardTitle>
-              <CardDescription>Orders pending confirmation</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {orders.length === 0 ? (
-                <div className="py-12 text-center text-muted-foreground">
-                  <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No orders in queue</p>
-                  <p className="text-sm mt-2">Orders will appear here automatically when imported</p>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Pending</p>
+                  <p className="text-2xl font-bold">{orders.length}</p>
                 </div>
-              ) : (
-                <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                  {orders.map((order) => (
-                    <div
-                      key={order.id}
-                      className={cn(
-                        'p-4 rounded-lg border cursor-pointer transition-colors',
-                        selectedOrder?.id === order.id && 'ring-2 ring-primary bg-primary/5'
-                      )}
-                      onClick={() => {
-                        setSelectedOrder(order)
-                        setCallNotes(order.notes || '')
-                      }}
-                    >
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm text-muted-foreground">
-                              {order.trackingNumber}
-                            </span>
-                            {order.isBlacklisted && (
-                              <Badge variant="destructive" className="ml-2">
-                                <ShieldAlert className="h-3 w-3" />Blacklisted
-                              </Badge>
-                            )}
-                            {callLogs.length > 0 && (
-                              <Badge variant="outline" className="ml-2">
-                                <Layers className="h-3 w-3" />{callLogs.length}
-                              </Badge>
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-medium">{order.customerName}</p>
-                            {order.sellerName && (
-                              <p className="text-sm text-muted-foreground">Seller: {order.sellerName}</p>
-                            )}
-                            <p className="text-sm">{order.customerPhone}</p>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openPhone(order.customerPhone)}
-                          >
-                            <Phone className="h-4 w-4" />
-                          </Button>
-                          <CallButton
-                            orderId={order.id}
-                            phone={order.customerPhone}
-                          />
-                        </div>
-                      </div>
+                <Phone className="h-8 w-8 text-yellow-600" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Confirmed Today</p>
+                  <p className="text-2xl font-bold text-green-600">{stats.confirmed}</p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Cancelled Today</p>
+                  <p className="text-2xl font-bold text-red-600">{stats.cancelled}</p>
+                </div>
+                <XCircle className="h-8 w-8 text-red-500" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Calls</p>
+                  <p className="text-2xl font-bold">{stats.totalCalls}</p>
+                </div>
+                <PhoneCall className="h-8 w-8 text-blue-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-                      <div className="text-sm">
-                        <MapPin className="h-4 w-4 text-muted-foreground inline" />
-                        <span className="ml-1">{order.customerAddress}</span>
-                        <span>, {order.city}</span>
-                      </div>
+        {/* Active Call Panel */}
+        {callStatus !== 'idle' && selectedOrder && (
+          <ActiveCallPanel
+            customerName={selectedOrder.customerName}
+            phone={selectedOrder.customerPhone}
+            orderCode={selectedOrder.trackingNumber}
+          />
+        )}
 
-                      <div className="flex items-center gap-2">
-                        <Badge className={statusConfig[order.status]?.color}>
-                          {statusConfig[order.status]?.label}
-                        </Badge>
-                        {order.scheduledCallAt && (
-                          <span className="text-xs text-muted-foreground ml-2">
-                            📅 {formatDate(order.scheduledCallAt)}
+        {/* Orders Queue */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Call Queue ({orders.length})</CardTitle>
+            <CardDescription>Orders pending confirmation</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {orders.length === 0 ? (
+              <div className="py-12 text-center text-muted-foreground">
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No orders in queue</p>
+                <p className="text-sm mt-2">Orders will appear here automatically when imported</p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                {orders.map((order) => (
+                  <div
+                    key={order.id}
+                    className={cn(
+                      'p-4 rounded-lg border cursor-pointer transition-colors',
+                      selectedOrder?.id === order.id && 'ring-2 ring-primary bg-primary/5'
+                    )}
+                    onClick={() => {
+                      setSelectedOrder(order)
+                      setCallNotes(order.notes || '')
+                    }}
+                  >
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm text-muted-foreground">
+                            {order.trackingNumber}
                           </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-bold">{formatCurrency(order.codAmount)}</span>
-                      </div>
-
-                      {order.itemCount > 1 && (
-                        <div className="flex items-center gap-1">
-                          <Layers className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{order.itemCount} items</span>
+                          {order.isBlacklisted && (
+                            <Badge variant="destructive" className="ml-2">
+                              <ShieldAlert className="h-3 w-3" />Blacklisted
+                            </Badge>
+                          )}
+                          {callLogs.length > 0 && (
+                            <Badge variant="outline" className="ml-2">
+                              <Layers className="h-3 w-3" />{callLogs.length}
+                            </Badge>
+                          )}
+                          {order.isBundle && (
+                            <Badge className="ml-2 bg-orange-500 text-white border-orange-600">
+                              BUNDLE
+                            </Badge>
+                          )}
                         </div>
+                        <div>
+                          <p className="font-medium">{order.customerName}</p>
+                          {order.sellerName && (
+                            <p className="text-sm text-muted-foreground">Seller: {order.sellerName}</p>
+                          )}
+                          <p className="text-sm">{order.customerPhone}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openPhone(order.customerPhone)}
+                        >
+                          <Phone className="h-4 w-4" />
+                        </Button>
+                        <CallButton
+                          orderId={order.id}
+                          phone={order.customerPhone}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground inline" />
+                      <span className="ml-1">{order.customerAddress}</span>
+                      <span>, {order.city}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Badge className={statusConfig[order.status]?.color}>
+                        {statusConfig[order.status]?.label}
+                      </Badge>
+                      {order.scheduledCallAt && (
+                        <span className="text-xs text-muted-foreground ml-2">
+                          📅 {formatDate(order.scheduledCallAt)}
+                        </span>
                       )}
+                    </div>
 
-                      <div>
-                        <p className="font-medium truncate">{order.productName}</p>
-                        {order.productDescription && (
-                          <p className="text-sm text-muted-foreground truncate">{order.productDescription}</p>
-                        )}
-                      </div>
-                          {/* Customer Info */}
-                          <div className="grid gap-3 text-sm">
-                            <div>
-                              <p className="text-muted-foreground">Customer</p>
-                              <p className="font-medium">{selectedOrder.customerName}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Phone</p>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => openPhone(selectedOrder.customerPhone)}
-                              >
-                                <Phone className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          <div>
-                              <p className="text-muted-foreground">Address</p>
-                              <p className="font-medium">{selectedOrder.customerAddress}</p>
-                              <p>, {selectedOrder.city}</p>
-                            </div>
-                          </div>
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-bold">{formatCurrency(order.codAmount)}</span>
+                    </div>
 
-                          {/* Call Actions */}
-                          <div className="space-y-3 pt-4 border-t">
-                            <div>
-                              <p className="text-sm font-medium">Call Actions</p>
-                              <div className="grid grid-cols-2 gap-3">
-                                <Button
-                                  onClick={() => {
-                                    // Check if this is a bundle order
-                                    if (selectedOrder.bundleGroupId) {
-                                      setCurrentBundleId(selectedOrder.bundleGroupId)
-                                      setShowBundleConfirmDialog(true)
-                                    } else {
-                                      logCall(selectedOrder.id, 'ANSWERED', 'Confirmed')
-                                      updateOrderStatus(selectedOrder.id, 'CONFIRMED')
-                                    }
-                                  }}
-                                  disabled={submitting || callStatus !== 'idle'}
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                >
-                                  <CheckCircle className="h-4 w-4 mr-1" />Confirm{selectedOrder.bundleGroupId ? ' All' : ''}
-                                </Button>
-                                <Button
-                                  onClick={() => {
-                                    logCall(selectedOrder.id, 'NO_ANSWER', 'No Answer')
-                                    updateOrderStatus(selectedOrder.id, 'NO_ANSWER')
-                                    }}
-                                  disabled={submitting || callStatus !== 'idle'}
-                                  className="bg-gray-500 hover:bg-gray-600 text-white"
-                                >
-                                  <PhoneMissed className="h-4 w-4 mr-1" />No Answer
-                                </Button>
-                                <Button
-                                  onClick={() => {
-                                    logCall(selectedOrder.id, 'BUSY', 'Busy')
-                                    updateOrderStatus(selectedOrder.id, 'NO_ANSWER')
-                                    }}
-                                  disabled={submitting || callStatus !== 'idle'}
-                                  className="bg-orange-500 hover:bg-orange-600 text-white"
-                                >
-                                  <PhoneOff className="h-4 w-4 mr-1" />Busy
-                                </Button>
-                              </div>
-                              <Button
-                                onClick={() => {
-                                    logCall(selectedOrder.id, 'CALLBACK', 'Callback')
-                                    updateOrderStatus(selectedOrder.id, 'POSTPONED')
-                                    }}
-                                    disabled={submitting || callStatus !== 'idle'}
-                                    className="bg-yellow-500 hover:bg-yellow-600 text-white"
-                                >
-                                  <PhoneIncoming className="h-4 w-4 mr-1" />Callback
-                                </Button>
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-sm text-muted-foreground">Schedule Callback</p>
-                              <div className="grid grid-cols-2 gap-2">
-                                <Input
-                                  type="date"
-                                  placeholder="Select date"
-                                  value={callScheduleDate}
-                                  onChange={(e) => setCallScheduleDate(e.target.value)}
-                                  className="h-9 w-full"
-                                />
-                                <Input
-                                  type="time"
-                                  placeholder="Select time"
-                                  value={callScheduleTime}
-                                  onChange={(e) => setCallScheduleTime(e.target.value)}
-                                  className="h-9 w-full"
-                                />
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  disabled={!callScheduleDate || !callScheduleTime || submitting}
-                                  onClick={() => {
-                                    handleScheduleCallback()
-                                  }}
-                                >
-                                  Schedule & Close
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Notes Input */}
-                          <div>
-                            <p className="text-sm font-medium">Call Notes</p>
-                            <Textarea
-                              placeholder="Add notes about this call..."
-                              value={callNotes}
-                              onChange={(e) => setCallNotes(e.target.value)}
-                              rows={2}
-                              className="min-h-[80px]"
-                            />
-                          </div>
-
-                          {/* Cancel Double */}
-                          <div>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => {
-                                updateOrderStatus(selectedOrder.id, 'CANCELLED')
-                                setSelectedOrder(null)
-                              }}
-                              disabled={submitting}
-                              className="w-full"
-                            >
-                              Cancel Order
-                            </Button>
-                          </div>
-                        </div>
+                    {order.itemCount > 1 && (
+                      <div className="flex items-center gap-1">
+                        <Layers className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{order.itemCount} items</span>
                       </div>
                     )}
+
+                    <div>
+                      <p className="font-medium truncate">{order.productName}</p>
+                      {order.productDescription && (
+                        <p className="text-sm text-muted-foreground truncate">{order.productDescription}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {/* Selected Order Details */}
+        {selectedOrder && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Details - {selectedOrder.trackingNumber}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="font-medium text-lg">{selectedOrder.productName}</p>
+                {selectedOrder.productDescription && (
+                  <p className="text-muted-foreground">{selectedOrder.productDescription}</p>
+                )}
+              </div>
+
+              <div className="grid gap-3 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Customer</p>
+                  <p className="font-medium">{selectedOrder.customerName}</p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-muted-foreground">Phone</p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openPhone(selectedOrder.customerPhone)}
+                    >
+                      <Phone className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <CallButton
+                    orderId={selectedOrder.id}
+                    phone={selectedOrder.customerPhone}
+                  />
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Address</p>
+                  <p className="font-medium">{selectedOrder.customerAddress}, {selectedOrder.city}</p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-muted-foreground">COD Amount</p>
+                <p className="font-bold text-lg">{formatCurrency(selectedOrder.codAmount)}</p>
+              </div>
+
+              {/* Call Actions */}
+              <div className="space-y-3 pt-4 border-t">
+                <div>
+                  <p className="text-sm font-medium">Call Actions</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      onClick={() => {
+                        if (selectedOrder.bundleGroupId) {
+                          setCurrentBundleId(selectedOrder.bundleGroupId)
+                          setShowBundleConfirmDialog(true)
+                        } else {
+                          logCall(selectedOrder.id, 'ANSWERED', 'Confirmed')
+                          updateOrderStatus(selectedOrder.id, 'CONFIRMED')
+                        }
+                      }}
+                      disabled={submitting || callStatus !== 'idle'}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-1" />Confirm{selectedOrder.bundleGroupId ? ' All' : ''}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        logCall(selectedOrder.id, 'NO_ANSWER', 'No Answer')
+                        updateOrderStatus(selectedOrder.id, 'NO_ANSWER')
+                      }}
+                      disabled={submitting || callStatus !== 'idle'}
+                      className="bg-gray-500 hover:bg-gray-600 text-white"
+                    >
+                      <PhoneMissed className="h-4 w-4 mr-1" />No Answer
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        logCall(selectedOrder.id, 'BUSY', 'Busy')
+                        updateOrderStatus(selectedOrder.id, 'NO_ANSWER')
+                      }}
+                      disabled={submitting || callStatus !== 'idle'}
+                      className="bg-orange-500 hover:bg-orange-600 text-white"
+                    >
+                      <PhoneOff className="h-4 w-4 mr-1" />Busy
+                    </Button>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      logCall(selectedOrder.id, 'CALLBACK', 'Callback')
+                      updateOrderStatus(selectedOrder.id, 'POSTPONED')
+                    }}
+                    disabled={submitting || callStatus !== 'idle'}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white w-full"
+                  >
+                    <PhoneIncoming className="h-4 w-4 mr-1" />Callback
+                  </Button>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Schedule Callback</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      type="date"
+                      placeholder="Select date"
+                      value={callScheduleDate}
+                      onChange={(e) => setCallScheduleDate(e.target.value)}
+                      className="h-9 w-full"
+                    />
+                    <Input
+                      type="time"
+                      placeholder="Select time"
+                      value={callScheduleTime}
+                      onChange={(e) => setCallScheduleTime(e.target.value)}
+                      className="h-9 w-full"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={!callScheduleDate || !callScheduleTime || submitting}
+                      onClick={() => handleScheduleCallback()}
+                      className="w-full"
+                    >
+                      Schedule & Close
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes Input */}
+              <div>
+                <p className="text-sm font-medium">Call Notes</p>
+                <Textarea
+                  placeholder="Add notes about this call..."
+                  value={callNotes}
+                  onChange={(e) => setCallNotes(e.target.value)}
+                  rows={2}
+                  className="min-h-[80px]"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    updateOrderStatus(selectedOrder.id, 'CANCELLED')
+                    setSelectedOrder(null)
+                  }}
+                  disabled={submitting}
+                  className="flex-1"
+                >
+                  Cancel Order
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedOrder(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Call Center Expenses */}
         <Card>
@@ -757,7 +794,14 @@ export default function CallCenterPage() {
           </DialogContent>
         </Dialog>
       </div>
-    </DashboardLayout>
     )
-  </>
+  }
+
+  return (
+    <SoftphoneProvider>
+      <DashboardLayout user={user}>
+        <CallCenterContent />
+      </DashboardLayout>
+    </SoftphoneProvider>
+  )
 }

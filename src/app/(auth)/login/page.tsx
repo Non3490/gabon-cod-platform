@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -11,11 +11,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Package, Eye, EyeOff, Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/'
-  
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -58,7 +58,7 @@ export default function LoginPage() {
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-indigo-500/10 blur-[120px]" />
         <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] rounded-full bg-violet-500/10 blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] dark:opacity-[0.05]" 
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] dark:opacity-[0.05]"
              style={{ backgroundImage: 'radial-gradient(#4f46e5 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
       </div>
 
@@ -70,7 +70,7 @@ export default function LoginPage() {
       >
         <Card className="border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl ring-1 ring-slate-200/50 dark:ring-slate-800/50">
           <CardHeader className="space-y-4 pt-8 pb-6 text-center">
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2 }}
@@ -92,7 +92,7 @@ export default function LoginPage() {
               </CardDescription>
             </div>
           </CardHeader>
-          
+
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-5 px-8">
               <AnimatePresence mode="wait">
@@ -108,7 +108,7 @@ export default function LoginPage() {
                   </motion.div>
                 )}
               </AnimatePresence>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-0.5">
                   Email Address
@@ -129,7 +129,7 @@ export default function LoginPage() {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between ml-0.5">
                   <Label htmlFor="password" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -146,7 +146,7 @@ export default function LoginPage() {
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
+                    placeholder="•••••••"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
@@ -176,11 +176,11 @@ export default function LoginPage() {
                 </span>
               </div>
             </CardContent>
-            
+
             <CardFooter className="flex flex-col space-y-4 px-8 pb-8 pt-4">
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-lg shadow-indigo-500/20 dark:shadow-none py-6 rounded-xl text-base font-bold transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 disabled:hover:scale-100 border-none" 
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-lg shadow-indigo-500/20 dark:shadow-none py-6 rounded-xl text-base font-bold transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 disabled:hover:scale-100 border-none"
                 disabled={loading}
               >
                 {loading ? (
@@ -195,11 +195,11 @@ export default function LoginPage() {
                   </div>
                 )}
               </Button>
-              
+
               <div className="flex items-center justify-center space-x-1.5 text-sm pt-2">
-                <span className="text-slate-500 dark:text-slate-400">New to the platform?</span>
-                <Link 
-                  href="/register" 
+                <span className="text-slate-500 dark:text-slate-400">New to platform?</span>
+                <Link
+                  href="/register"
                   className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 font-bold underline underline-offset-4 decoration-indigo-500/30"
                 >
                   Create account
@@ -209,7 +209,7 @@ export default function LoginPage() {
           </form>
         </Card>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
@@ -221,5 +221,13 @@ export default function LoginPage() {
         </motion.div>
       </motion.div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   )
 }

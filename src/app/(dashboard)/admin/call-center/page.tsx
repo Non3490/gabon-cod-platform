@@ -54,6 +54,7 @@ interface AgentStat {
   confirmedToday: number
   cancelledToday: number
   callsMadeToday: number
+  isOnline?: boolean
 }
 
 interface QueueData {
@@ -73,7 +74,10 @@ export default function AdminCallCenterPage() {
   const [reassigning, setReassigning] = useState(false)
 
   useEffect(() => {
-    if (!userLoading && (!user || user.role !== 'ADMIN')) router.push('/login')
+    if (userLoading) return
+    if (!user) { router.push('/login'); return }
+    if (user.role !== 'ADMIN') { router.push('/unauthorized'); return }
+    fetchData()
   }, [user, userLoading, router])
 
   const fetchData = useCallback(async () => {
@@ -264,9 +268,22 @@ export default function AdminCallCenterPage() {
                       return (
                         <TableRow key={agent.id} className="hover:bg-muted/20">
                           <TableCell className="pl-6">
-                            <div>
-                              <p className="font-semibold">{agent.name}</p>
-                              <p className="text-xs text-muted-foreground">{agent.email}</p>
+                            <div className="flex items-center gap-2">
+                              <div>
+                                <p className="font-semibold flex items-center gap-2">
+                                  {agent.name}
+                                  {agent.isOnline ? (
+                                    <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">
+                                      Online
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="text-xs text-muted-foreground">
+                                      Offline
+                                    </Badge>
+                                  )}
+                                </p>
+                                <p className="text-xs text-muted-foreground">{agent.email}</p>
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell className="text-center">

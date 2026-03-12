@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Call center only' }, { status: 403 })
     }
 
-    // Get priority queue scores
-    const scoredQueue = await getPriorityQueue(user.parentSellerId)
+    // Unified Agent View: CALL_CENTER agents see ALL sellers' orders (no parentSellerId filter)
+    const scoredQueue = await getPriorityQueue(null)
     const orderIds = scoredQueue.map(q => q.orderId)
 
     if (orderIds.length === 0) {
@@ -65,13 +65,41 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Bundle detection: same phone + 2+ sellers + same day
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+    // Group orders by phone for bundle detection
+    const phoneGroups = new Map<string, typeof orders>()
+    orders.forEach(order => {
+      const orderDate = new Date(order.createdAt)
+      const orderDay = new Date(orderDate.getFullYear(), orderDate.getMonth(), orderDate.getDate())
+
+      // Only group orders from same day
+      if (orderDay.getTime() === today.getTime()) {
+        const existing = phoneGroups.get(order.phone) || []
+        existing.push(order)
+        phoneGroups.set(order.phone, existing)
+      }
+    })
+
+    // Determine which orders are bundles (same phone, 2+ sellers, same day)
+    const bundleOrderIds = new Set<string>()
+    for (const [phone, groupOrders] of phoneGroups) {
+      const uniqueSellers = new Set(groupOrders.map(o => o.sellerId))
+      if (uniqueSellers.size >= 2) {
+        // This phone has orders from 2+ sellers today - mark all as bundle
+        groupOrders.forEach(o => bundleOrderIds.add(o.id))
+      }
+    }
+
     // Build order list with bundle detection
     const queuedOrders: QueuedOrder[] = orderIds.map(orderId => {
       const order = orders.find(o => o.id === orderId)!
       const scoreEntry = scoredQueue.find(q => q.orderId === orderId)!
 
-      // Bundle detection: order has multiple items OR same product with quantity > 1
-      const isBundle = order.items.length > 1 || order.items.some(i => i.quantity > 1)
+      // Bundle detection: same phone + 2+ sellers + same day
+      const isBundle = bundleOrderIds.has(order.id)
 
       // Build item names for display
       const itemNames = order.items.map(item => {

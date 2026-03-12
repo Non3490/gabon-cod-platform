@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     ])
 
     const delivered30d = orders30d.filter(o => o.status === 'DELIVERED')
+    const confirmed30d = orders30d.filter(o => o.status === 'CONFIRMED')
     const returned30d = orders30d.filter(o => o.status === 'RETURNED')
     const totalRevenue30d = delivered30d.reduce((s, o) => s + o.codAmount, 0)
 
@@ -40,6 +41,9 @@ export async function GET(request: NextRequest) {
       : 0
     const returnRate = orders30d.length > 0
       ? Math.round((returned30d.length / orders30d.length) * 100)
+      : 0
+    const confirmationRate = orders30d.length > 0
+      ? Math.round((confirmed30d.length / orders30d.length) * 100)
       : 0
 
     // Daily breakdown for last 7 days
@@ -72,10 +76,12 @@ export async function GET(request: NextRequest) {
       summary: {
         totalOrders: orders30d.length,
         delivered: delivered30d.length,
+        confirmed: confirmed30d.length,
         returned: returned30d.length,
         totalRevenue: totalRevenue30d,
         deliveryRate,
         returnRate,
+        confirmationRate,
         avgOrderValue: delivered30d.length > 0 ? totalRevenue30d / delivered30d.length : 0,
         avgDailyOrders: Math.round(orders30d.length / 30)
       },

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import { cn } from '@/lib/utils'
-import { type UserRole } from '@/lib/auth-types'
+import { type UserRole } from '@/types/auth-types'
 
 interface DashboardLayoutProps {
   children: React.ReactNode

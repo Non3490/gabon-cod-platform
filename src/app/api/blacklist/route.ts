@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { getBlacklistStats } from '@/lib/blacklist-service'
 
 // GET /api/blacklist
 export async function GET(request: NextRequest) {
@@ -20,7 +21,20 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json({ blacklist })
+    // Get order statistics for each blacklisted phone
+    const blacklistWithStats = await Promise.all(
+      blacklist.map(async (entry) => {
+        const stats = await getBlacklistStats(entry.phone)
+        return {
+          ...entry,
+          orderCount: stats?.totalOrders ?? 0,
+          confirmationRate: stats?.confirmationRate ?? 0,
+          deliveryRate: stats?.deliveryRate ?? 0
+        }
+      })
+    )
+
+    return NextResponse.json({ blacklist: blacklistWithStats })
   } catch (error) {
     console.error('Get blacklist error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

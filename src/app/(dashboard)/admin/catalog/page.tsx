@@ -111,10 +111,16 @@ export default function AdminCatalogPage() {
   }
 
   useEffect(() => {
-    if (user && user.role === 'ADMIN') {
-      fetchProducts()
+    if (!userLoading && !user) {
+      router.push('/login')
+      return
     }
-  }, [user])
+    if (user.role !== 'ADMIN') {
+      router.push('/unauthorized')
+      return
+    }
+    fetchProducts()
+  }, [user, userLoading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

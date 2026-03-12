@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { DashboardLayout } from '@/components/layout'
-import { useUser } from '@/hooks/use-user'
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Trash2, Plus, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { DashboardLayout } from '@/components/layout'
+import { useUser } from '@/hooks/use-user'
 
 interface BlacklistEntry {
   id: string
@@ -20,6 +21,9 @@ interface BlacklistEntry {
   removedAt: string | null
   removedBy: string | null
   isActive: boolean
+  orderCount: number
+  confirmationRate: number
+  deliveryRate: number
 }
 
 export default function BlacklistPage() {
@@ -29,16 +33,16 @@ export default function BlacklistPage() {
   const [blacklist, setBlacklist] = useState<BlacklistEntry[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
   const [newPhone, setNewPhone] = useState('')
   const [newReason, setNewReason] = useState('')
 
+  // Check auth and redirect if needed
   useEffect(() => {
     if (!userLoading && !user) {
       router.push('/login')
       return
     }
-    if (user.role !== 'ADMIN') {
+    if (user && user.role !== 'ADMIN') {
       router.push('/unauthorized')
       return
     }
@@ -77,7 +81,6 @@ export default function BlacklistPage() {
       return
     }
 
-    setDialogOpen(false)
     setNewPhone('')
     setNewReason('')
     fetchBlacklist()
@@ -96,6 +99,11 @@ export default function BlacklistPage() {
     }
 
     fetchBlacklist()
+  }
+
+  // Early return if user is null or not authorized
+  if (!user || user.role !== 'ADMIN') {
+    return null
   }
 
   const stats = {
@@ -142,7 +150,7 @@ export default function BlacklistPage() {
           <Card>
             <CardHeader>
               <CardTitle>Add to Blacklist</CardTitle>
-              <CardDescription>Manually add a phone number to the blacklist</CardDescription>
+              <CardDescription>Manually add a phone number to blacklist</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={(e) => { e.preventDefault(); handleAdd() }} className="flex gap-3">
@@ -197,6 +205,9 @@ export default function BlacklistPage() {
                         <th className="text-left py-3 px-4 text-sm font-bold uppercase text-muted-foreground">Phone</th>
                         <th className="text-left py-3 px-4 text-sm font-bold uppercase text-muted-foreground">Added</th>
                         <th className="text-left py-3 px-4 text-sm font-bold uppercase text-muted-foreground">Auto-Flagged</th>
+                        <th className="text-left py-3 px-4 text-sm font-bold uppercase text-muted-foreground">Orders</th>
+                        <th className="text-left py-3 px-4 text-sm font-bold uppercase text-muted-foreground">Confirm %</th>
+                        <th className="text-left py-3 px-4 text-sm font-bold uppercase text-muted-foreground">Deliver %</th>
                         <th className="text-left py-3 px-4 text-sm font-bold uppercase text-muted-foreground">Reason</th>
                         <th className="text-left py-3 px-4 text-sm font-bold uppercase text-muted-foreground">Status</th>
                         <th className="text-right py-3 px-4 text-sm font-bold uppercase text-muted-foreground">Actions</th>
@@ -216,6 +227,19 @@ export default function BlacklistPage() {
                               {entry.autoFlagged ? 'Auto' : 'Manual'}
                             </Badge>
                           </td>
+                          <td className="py-3 px-4">
+                            <span className="font-semibold">{entry.orderCount}</span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge variant={entry.confirmationRate < 50 ? 'destructive' : entry.confirmationRate < 70 ? 'secondary' : 'default'}>
+                              {entry.confirmationRate}%
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge variant={entry.deliveryRate < 50 ? 'destructive' : entry.deliveryRate < 70 ? 'secondary' : 'default'}>
+                              {entry.deliveryRate}%
+                            </Badge>
+                          </td>
                           <td className="py-3 px-4 max-w-xs">
                             <span className="text-sm truncate">{entry.reason || '-'}</span>
                           </td>
@@ -223,7 +247,7 @@ export default function BlacklistPage() {
                             <Badge variant={entry.isActive ? 'destructive' : 'secondary'}>
                               {entry.isActive ? 'Active' : 'Inactive'}
                             </Badge>
-                            </td>
+                          </td>
                           <td className="py-3 px-4 text-right">
                             {entry.isActive && (
                               <Button
@@ -247,4 +271,6 @@ export default function BlacklistPage() {
       </DashboardLayout>
     )
   }
+
+  return null
 }

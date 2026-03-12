@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -200,7 +200,8 @@ const sourceOptions = [
   { value: 'LIGHTFUNNELS', label: 'LightFunnels' }
 ]
 
-export default function OrdersPage() {
+// Inner component that uses useSearchParams
+function OrdersPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, loading: userLoading } = useUser()
@@ -880,5 +881,14 @@ export default function OrdersPage() {
         </div>
       </div>
     </DashboardLayout>
+  )
+}
+
+// Main wrapper with Suspense boundary
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <OrdersPageContent />
+    </Suspense>
   )
 }

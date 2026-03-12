@@ -1,5 +1,5 @@
 import { db } from '@/lib/db'
-import { twilio } from 'twilio'
+import twilio from 'twilio'
 
 const twilioClient = new twilio(
   process.env.TWILIO_ACCOUNT_SID,

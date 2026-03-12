@@ -19,7 +19,7 @@ export default function HomePage() {
               router.push('/admin')
               break
             case 'SELLER':
-              router.push('/orders')
+              router.push('/seller')
               break
             case 'CALL_CENTER':
               router.push('/call-center')
@@ -28,7 +28,7 @@ export default function HomePage() {
               router.push('/delivery')
               break
             default:
-              router.push('/orders')
+              router.push('/login')
           }
         } else {
           router.push('/login')

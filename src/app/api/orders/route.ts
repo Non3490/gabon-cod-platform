@@ -57,14 +57,26 @@ export async function GET(request: NextRequest) {
       db.order.count({ where })
     ])
 
+    // Strip cost-related fields for CALL_CENTER role
+    const shouldStripCost = user.role === 'CALL_CENTER'
+
     // Add backward-compat aliases for existing UI pages
-    const mappedOrders = orders.map(o => ({
-      ...o,
-      customerName: o.recipientName,
-      customerPhone: o.phone,
-      customerAddress: o.address,
-      notes: o.note
-    }))
+    const mappedOrders = orders.map(o => {
+      const order = {
+        ...o,
+        customerName: o.recipientName,
+        customerPhone: o.phone,
+        customerAddress: o.address,
+        notes: o.note
+      }
+      if (shouldStripCost) {
+        delete order.productCost
+        delete order.shippingCost
+        delete order.callCenterFee
+        delete order.adSpend
+      }
+      return order
+    })
 
     return NextResponse.json({
       orders: mappedOrders,
