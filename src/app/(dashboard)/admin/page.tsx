@@ -153,7 +153,7 @@ export default function AdminDashboard() {
     if (!userLoading && !user) {
       router.push('/login')
     }
-  }, [user, userLoading, router])
+  }, [user, userLoading])
 
   useEffect(() => {
     if (!user) return
@@ -171,6 +171,30 @@ export default function AdminDashboard() {
 
         if (responses[0].ok) {
           setData(await responses[0].json())
+        } else {
+          // Set empty data on error to avoid null state
+          setData({
+            stats: {
+              totalOrders: 0,
+              totalRevenue: 0,
+              totalProfit: 0,
+              deliveryRate: 0,
+              pendingOrders: 0,
+              newOrders: 0,
+              confirmedOrders: 0,
+              shippedOrders: 0,
+              deliveredOrders: 0,
+              returnedOrders: 0,
+              cancelledOrders: 0,
+            },
+            recentOrders: [],
+            ordersPerDay: [],
+            cityStats: {},
+            activeAgentsCount: 0,
+            onCallAgentsCount: 0,
+            pendingCODAmount: 0,
+            lowStockProducts: [],
+          })
         }
 
         if (responses[1]?.ok) {
@@ -178,6 +202,29 @@ export default function AdminDashboard() {
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error)
+        // Set empty data on error
+        setData({
+          stats: {
+            totalOrders: 0,
+            totalRevenue: 0,
+            totalProfit: 0,
+            deliveryRate: 0,
+            pendingOrders: 0,
+            newOrders: 0,
+            confirmedOrders: 0,
+            shippedOrders: 0,
+            deliveredOrders: 0,
+            returnedOrders: 0,
+            cancelledOrders: 0,
+          },
+          recentOrders: [],
+          ordersPerDay: [],
+          cityStats: {},
+          activeAgentsCount: 0,
+          onCallAgentsCount: 0,
+          pendingCODAmount: 0,
+          lowStockProducts: [],
+        })
       } finally {
         setLoading(false)
       }
