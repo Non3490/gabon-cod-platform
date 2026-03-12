@@ -5,6 +5,15 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import {
   Select,
   SelectContent,
@@ -12,8 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import { DashboardLayout } from '@/components/layout'
 import { useUser } from '@/hooks/use-user'
 import {
@@ -30,8 +37,12 @@ import {
   Users,
   Warehouse,
   Activity,
-  Zap,
-  ArrowRight
+  ArrowRight,
+  Phone,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  X as CloseIcon
 } from 'lucide-react'
 import {
   AreaChart,
@@ -47,9 +58,13 @@ import {
   Pie,
   Cell,
   LineChart,
-  Legend
+  Legend,
+  Line,
+  ReferenceLine
+}
 } from 'recharts'
 import { cn } from '@/lib/utils'
+import { Switch } from '@/components/ui/switch'
 
 interface DashboardData {
   stats: {
@@ -134,7 +149,6 @@ export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState<Period>('30d')
-  const [compareWithPreviousPeriod, setCompareWithPreviousPeriod] = useState(false)
   const [previousData, setPreviousData] = useState<PreviousPeriodData | null>(null)
 
   useEffect(() => {
@@ -147,16 +161,16 @@ export default function AdminDashboard() {
     if (user) {
       fetchDashboardData()
     }
-  }, [user, period, compareWithPreviousPeriod])
+  }, [user, period])
 
   const fetchDashboardData = async () => {
     try {
-      const requests = [fetch(new URL(`/api/dashboard?period=${period}`, window.location.origin).toString())]
-
-      if (compareWithPreviousPeriod) {
-        const { previousStart, previousEnd } = getPreviousPeriodDates()
-        requests.push(fetch(new URL(`/api/dashboard?period=custom&dateFrom=${previousStart}&dateTo=${previousEnd}`, window.location.origin).toString()))
-      }
+      // Always fetch current and previous period data
+      const { previousStart, previousEnd } = getPreviousPeriodDates()
+      const requests = [
+        fetch(new URL(`/api/dashboard?period=${period}`, window.location.origin).toString()),
+        fetch(new URL(`/api/dashboard?period=custom&dateFrom=${previousStart}&dateTo=${previousEnd}`, window.location.origin).toString())
+      ]
 
       const responses = await Promise.all(requests)
 
@@ -164,10 +178,8 @@ export default function AdminDashboard() {
         setData(await responses[0].json())
       }
 
-      if (compareWithPreviousPeriod && responses[1]?.ok) {
+      if (responses[1]?.ok) {
         setPreviousData(await responses[1].json())
-      } else {
-        setPreviousData(null)
       }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error)
@@ -204,12 +216,80 @@ export default function AdminDashboard() {
 
   if (userLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="relative">
-          <div className="h-12 w-12 rounded-full border-4 border-indigo-100 dark:border-indigo-900"></div>
-          <div className="absolute top-0 h-12 w-12 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
+      <DashboardLayout user={user as any}>
+        <div className="space-y-6 pb-10">
+          {/* Skeleton KPI Cards */}
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Card key={i} className="border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-10 rounded-xl" />
+                </CardHeader>
+                <CardContent className="pb-3">
+                  <Skeleton className="h-8 w-24 mb-2" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-10 mt-2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Skeleton Charts */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card className="border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+              <CardHeader className="pb-2">
+                <Skeleton className="h-6 w-32 mb-2" />
+                <Skeleton className="h-8 w-8 rounded-full" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-[340px]" />
+              </CardContent>
+            </Card>
+            <Card className="border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+              <CardHeader className="pb-2">
+                <Skeleton className="h-6 w-32 mb-2" />
+                <Skeleton className="h-8 w-8 rounded-full" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-[340px]" />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Skeleton Regional and Quick Metrics */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <Card className="lg:col-span-2 border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+              <CardHeader>
+                <Skeleton className="h-6 w-40" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-[340px]" />
+              </CardContent>
+            </Card>
+            <Card className="border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-24 mb-4" />
+                <Skeleton className="h-24" />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Skeleton Orders Table */}
+          <Card className="border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+            <CardHeader>
+              <Skeleton className="h-7 w-40 mb-2" />
+              <Skeleton className="h-8 w-24" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-80 w-full" />
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      </DashboardLayout>
     )
   }
 
@@ -251,237 +331,367 @@ export default function AdminDashboard() {
   ].filter(d => d.value > 0)
 
   return (
-    <DashboardLayout user={user}>
-      <div className="space-y-8 pb-10">
-        {/* Modern Hero Header */}
-        <div className="relative overflow-hidden rounded-3xl bg-indigo-600 px-8 py-10 text-white shadow-2xl dark:bg-indigo-950">
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
-              <div className="inline-flex items-center space-x-2 rounded-full bg-indigo-500/30 px-3 py-1 text-xs font-medium text-indigo-100 backdrop-blur-sm">
-                <Zap className="h-3.5 w-3.5 fill-current" />
-                <span>System Live & Running</span>
-              </div>
-              <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Dashboard</h1>
-              <p className="text-lg text-indigo-100/80">
-                Welcome back, <span className="font-semibold text-white">{user.name}</span>! Here&apos;s your platform at a glance.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                onClick={() => router.push('/orders')}
-                variant="secondary"
-                className="h-11 bg-white text-indigo-600 hover:bg-indigo-50 shadow-lg transition-all hover:scale-105"
-              >
-                <Package className="mr-2 h-4 w-4" />
-                Manage Orders
-              </Button>
-              <Select value={period} onValueChange={(value) => setPeriod(value as Period)}>
-                <SelectTrigger className="h-11 w-[160px] bg-white text-indigo-600 hover:bg-indigo-50 shadow-lg">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="7d">Last 7 Days</SelectItem>
-                  <SelectItem value="30d">Last 30 Days</SelectItem>
-                  <SelectItem value="custom">Custom Range</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-full shadow-lg">
-                <Switch
-                  id="compare-period"
-                  checked={compareWithPreviousPeriod}
-                  onCheckedChange={setCompareWithPreviousPeriod}
-                />
-                <Label htmlFor="compare-period" className="text-sm font-semibold text-indigo-700 cursor-pointer">
-                  Compare
-                </Label>
-              </div>
-            </div>
-          </div>
-          {/* Abstract Decorations */}
-          <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl transition-transform duration-1000 group-hover:scale-110" />
-          <div className="absolute -bottom-20 left-40 h-60 w-60 rounded-full bg-indigo-400/20 blur-3xl" />
-        </div>
-
-        {/* Enhanced Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <DashboardLayout user={user} period={period} onPeriodChange={setPeriod}>
+      <div className="space-y-6 pb-10">
+        {/* Enhanced Stats Cards - Now visible without scrolling */}
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5">
+          {/* Net Profit Card */}
           {data.stats.totalProfit !== undefined && (
-            <Card className="group relative overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+            <Card className="group relative overflow-hidden transition-all hover:shadow-lg border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
               <div className={cn(
                 "absolute top-0 left-0 h-1 w-full",
                 data.stats.totalProfit >= 0 ? "bg-indigo-500" : "bg-rose-500"
               )} />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Net Profit</CardTitle>
+              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                <div>
+                  <CardTitle className="text-xs font-medium text-slate-500 dark:text-slate-400">Net profit</CardTitle>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-[10px] font-medium px-1.5 py-0",
+                        previousData?.stats?.totalProfit !== undefined && calculatePercentChange(data.stats.totalProfit, previousData.stats.totalProfit).value >= 0
+                          ? "border-emerald-200 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50"
+                          : "border-rose-200 text-rose-700 dark:text-rose-400 bg-rose-50/50"
+                      )}
+                    >
+                      {previousData?.stats?.totalProfit !== undefined && calculatePercentChange(data.stats.totalProfit, previousData.stats.totalProfit).value >= 0 ? (
+                        <ArrowUpRight className="h-2.5 w-2.5 mr-0.5" />
+                      ) : (
+                        <ArrowDownRight className="h-2.5 w-2.5 mr-0.5" />
+                      )}
+                      {previousData?.stats?.totalProfit !== undefined ? calculatePercentChange(data.stats.totalProfit, previousData.stats.totalProfit).label : '0%'}
+                    </Badge>
+                  </div>
+                </div>
                 <div className={cn(
-                  "rounded-2xl p-2.5 transition-transform group-hover:rotate-12",
+                  "rounded-xl p-1.5 transition-transform group-hover:rotate-6",
                   data.stats.totalProfit >= 0
                     ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30"
                     : "bg-rose-50 text-rose-600 dark:bg-rose-900/30"
                 )}>
-                  <Activity className="h-5 w-5" />
+                  <Activity className="h-4 w-4" />
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pb-3">
                 <div className={cn(
-                  "text-3xl font-bold tracking-tight",
+                  "text-2xl font-bold tracking-tight",
                   data.stats.totalProfit >= 0 ? "text-slate-900 dark:text-white" : "text-rose-600"
                 )}>
                   {formatCurrency(data.stats.totalProfit)}
                 </div>
-                <div className="mt-2 flex items-center text-xs font-medium text-slate-400">
-                  {compareWithPreviousPeriod && previousData?.stats?.totalProfit !== undefined ? (
-                    <div className="flex items-center gap-1">
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "text-[10px] font-medium",
-                          calculatePercentChange(data.stats.totalProfit, previousData.stats.totalProfit).value >= 0
-                            ? "border-green-500 text-green-600 dark:text-green-400"
-                            : "border-red-500 text-red-600 dark:text-red-400"
-                        )}
-                      >
-                        {calculatePercentChange(data.stats.totalProfit, previousData.stats.totalProfit).value >= 0 ? (
-                          <ArrowUpRight className="h-3 w-3 mr-0.5" />
-                        ) : (
-                          <ArrowDownRight className="h-3 w-3 mr-0.5" />
-                        )}
-                        {calculatePercentChange(data.stats.totalProfit, previousData.stats.totalProfit).label}
-                      </Badge>
-                      <span className="ml-1 text-slate-400">vs prev period</span>
-                    </div>
-                  ) : (
-                    <span className="text-slate-400">Net after fulfillment costs</span>
-                  )}
+                <div className="mt-1 flex items-center text-[10px] font-medium text-slate-400">
+                  {previousData?.stats?.totalProfit !== undefined
+                    ? `vs ${formatCurrency(previousData.stats.totalProfit)} last period`
+                    : 'Net after fulfillment costs'
+                  }
                 </div>
+                {/* Sparkline */}
+                {data.ordersPerDay.length > 1 && (
+                  <div className="h-10 mt-2">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={data.ordersPerDay}>
+                        <Area
+                          type="monotone"
+                          dataKey="total"
+                          stroke={data.stats.totalProfit >= 0 ? "#6366f1" : "#f43f5e"}
+                          strokeWidth={1.5}
+                          fill={data.stats.totalProfit >= 0 ? "url(#sparklineIndigo)" : "url(#sparklineRose)"}
+                          fillOpacity={0.4}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
 
-          <Card className="group relative overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+          {/* Total Orders Card */}
+          <Card className="group relative overflow-hidden transition-all hover:shadow-lg border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
             <div className="absolute top-0 left-0 h-1 w-full bg-blue-500" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Orders</CardTitle>
-              <div className="rounded-2xl bg-blue-50 p-2.5 text-blue-600 dark:bg-blue-900/30 transition-transform group-hover:rotate-12">
-                <Package className="h-5 w-5" />
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle className="text-xs font-medium text-slate-500 dark:text-slate-400">Total orders</CardTitle>
+                <div className="flex items-center gap-1 mt-1">
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[10px] font-medium px-1.5 py-0",
+                      previousData?.stats?.totalOrders !== undefined && calculatePercentChange(data.stats.totalOrders, previousData.stats.totalOrders).value >= 0
+                        ? "border-emerald-200 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50"
+                        : "border-rose-200 text-rose-700 dark:text-rose-400 bg-rose-50/50"
+                    )}
+                  >
+                    {previousData?.stats?.totalOrders !== undefined && calculatePercentChange(data.stats.totalOrders, previousData.stats.totalOrders).value >= 0 ? (
+                      <ArrowUpRight className="h-2.5 w-2.5 mr-0.5" />
+                    ) : (
+                      <ArrowDownRight className="h-2.5 w-2.5 mr-0.5" />
+                    )}
+                    {previousData?.stats?.totalOrders !== undefined ? calculatePercentChange(data.stats.totalOrders, previousData.stats.totalOrders).label : '0%'}
+                  </Badge>
+                </div>
+              </div>
+              <div className="rounded-xl bg-blue-50 p-1.5 text-blue-600 dark:bg-blue-900/30 transition-transform group-hover:rotate-6">
+                <Package className="h-4 w-4" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{data.stats.totalOrders.toLocaleString()}</div>
-              <div className="mt-2 flex items-center text-xs font-medium">
-                {compareWithPreviousPeriod && previousData?.stats?.totalOrders ? (
-                  <div className="flex items-center gap-1">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-[10px] font-medium",
-                        calculatePercentChange(data.stats.totalOrders, previousData.stats.totalOrders).value >= 0
-                          ? "border-green-500 text-green-600 dark:text-green-400"
-                          : "border-red-500 text-red-600 dark:text-red-400"
-                      )}
-                    >
-                      {calculatePercentChange(data.stats.totalOrders, previousData.stats.totalOrders).value >= 0 ? (
-                        <ArrowUpRight className="h-3 w-3 mr-0.5" />
-                      ) : (
-                        <ArrowDownRight className="h-3 w-3 mr-0.5" />
-                      )}
-                      {calculatePercentChange(data.stats.totalOrders, previousData.stats.totalOrders).label}
-                    </Badge>
-                    <span className="ml-1 text-slate-400">vs prev period</span>
-                  </div>
-                ) : (
-                  <>
-                    <span className="text-blue-600 dark:text-blue-400">{data.stats.pendingOrders}</span>
-                    <span className="ml-1 text-slate-400">pending confirmation</span>
-                  </>
-                )}
+            <CardContent className="pb-3">
+              <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{data.stats.totalOrders.toLocaleString()}</div>
+              <div className="mt-1 flex items-center text-[10px] font-medium text-slate-400">
+                {previousData?.stats?.totalOrders !== undefined
+                  ? `vs ${previousData.stats.totalOrders.toLocaleString()} last period`
+                  : `${data.stats.pendingOrders} pending confirmation`
+                }
               </div>
+              {/* Sparkline */}
+              {data.ordersPerDay.length > 1 && (
+                <div className="h-10 mt-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data.ordersPerDay}>
+                      <Area
+                        type="monotone"
+                        dataKey="total"
+                        stroke="#3b82f6"
+                        strokeWidth={1.5}
+                        fill="url(#sparklineBlue)"
+                        fillOpacity={0.4}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+          {/* Revenue Card */}
+          <Card className="group relative overflow-hidden transition-all hover:shadow-lg border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
             <div className="absolute top-0 left-0 h-1 w-full bg-emerald-500" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Revenue</CardTitle>
-              <div className="rounded-2xl bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-900/30 transition-transform group-hover:rotate-12">
-                <DollarSign className="h-5 w-5" />
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle className="text-xs font-medium text-slate-500 dark:text-slate-400">Revenue</CardTitle>
+                <div className="flex items-center gap-1 mt-1">
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[10px] font-medium px-1.5 py-0",
+                      previousData?.stats?.totalRevenue !== undefined && calculatePercentChange(data.stats.totalRevenue, previousData.stats.totalRevenue).value >= 0
+                        ? "border-emerald-200 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50"
+                        : "border-rose-200 text-rose-700 dark:text-rose-400 bg-rose-50/50"
+                    )}
+                  >
+                    {previousData?.stats?.totalRevenue !== undefined && calculatePercentChange(data.stats.totalRevenue, previousData.stats.totalRevenue).value >= 0 ? (
+                      <ArrowUpRight className="h-2.5 w-2.5 mr-0.5" />
+                    ) : (
+                      <ArrowDownRight className="h-2.5 w-2.5 mr-0.5" />
+                    )}
+                    {previousData?.stats?.totalRevenue !== undefined ? calculatePercentChange(data.stats.totalRevenue, previousData.stats.totalRevenue).label : '0%'}
+                  </Badge>
+                </div>
+              </div>
+              <div className="rounded-xl bg-emerald-50 p-1.5 text-emerald-600 dark:bg-emerald-900/30 transition-transform group-hover:rotate-6">
+                <DollarSign className="h-4 w-4" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{formatCurrency(data.stats.totalRevenue)}</div>
-              <div className="mt-2 flex items-center text-xs font-medium">
-                {compareWithPreviousPeriod && previousData?.stats?.totalRevenue ? (
-                  <div className="flex items-center gap-1">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-[10px] font-medium",
-                        calculatePercentChange(data.stats.totalRevenue, previousData.stats.totalRevenue).value >= 0
-                          ? "border-green-500 text-green-600 dark:text-green-400"
-                          : "border-red-500 text-red-600 dark:text-red-400"
-                      )}
-                    >
-                      {calculatePercentChange(data.stats.totalRevenue, previousData.stats.totalRevenue).value >= 0 ? (
-                        <ArrowUpRight className="h-3 w-3 mr-0.5" />
-                      ) : (
-                        <ArrowDownRight className="h-3 w-3 mr-0.5" />
-                      )}
-                      {calculatePercentChange(data.stats.totalRevenue, previousData.stats.totalRevenue).label}
-                    </Badge>
-                    <span className="ml-1 text-slate-400">vs prev period</span>
-                  </div>
-                ) : (
-                  <>
-                    <TrendingUp className="mr-1 h-3 w-3 text-emerald-500" />
-                    <span className="text-slate-400">From delivered orders</span>
-                  </>
-                )}
+            <CardContent className="pb-3">
+              <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{formatCurrency(data.stats.totalRevenue)}</div>
+              <div className="mt-1 flex items-center text-[10px] font-medium text-slate-400">
+                {previousData?.stats?.totalRevenue !== undefined
+                  ? `vs ${formatCurrency(previousData.stats.totalRevenue)} last period`
+                  : 'From delivered orders'
+                }
               </div>
+              {/* Sparkline */}
+              {data.ordersPerDay.length > 1 && (
+                <div className="h-10 mt-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data.ordersPerDay}>
+                      <Area
+                        type="monotone"
+                        dataKey="delivered"
+                        stroke="#10b981"
+                        strokeWidth={1.5}
+                        fill="url(#sparklineGreen)"
+                        fillOpacity={0.4}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+          {/* Delivery Rate Card */}
+          <Card className="group relative overflow-hidden transition-all hover:shadow-lg border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
             <div className="absolute top-0 left-0 h-1 w-full bg-violet-500" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Delivery Rate</CardTitle>
-              <div className="rounded-2xl bg-violet-50 p-2.5 text-violet-600 dark:bg-violet-900/30 transition-transform group-hover:rotate-12">
-                <TrendingUp className="h-5 w-5" />
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle className="text-xs font-medium text-slate-500 dark:text-slate-400">Delivery rate</CardTitle>
+                <div className="flex items-center gap-1 mt-1">
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[10px] font-medium px-1.5 py-0",
+                      previousData?.stats?.deliveryRate !== undefined && calculatePercentChange(data.stats.deliveryRate, previousData.stats.deliveryRate).value >= 0
+                        ? "border-emerald-200 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50"
+                        : "border-rose-200 text-rose-700 dark:text-rose-400 bg-rose-50/50"
+                    )}
+                  >
+                    {previousData?.stats?.deliveryRate !== undefined && calculatePercentChange(data.stats.deliveryRate, previousData.stats.deliveryRate).value >= 0 ? (
+                      <ArrowUpRight className="h-2.5 w-2.5 mr-0.5" />
+                    ) : (
+                      <ArrowDownRight className="h-2.5 w-2.5 mr-0.5" />
+                    )}
+                    {previousData?.stats?.deliveryRate !== undefined ? calculatePercentChange(data.stats.deliveryRate, previousData.stats.deliveryRate).label : '0%'}
+                  </Badge>
+                </div>
+              </div>
+              <div className="rounded-xl bg-violet-50 p-1.5 text-violet-600 dark:bg-violet-900/30 transition-transform group-hover:rotate-6">
+                <TrendingUp className="h-4 w-4" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{data.stats.deliveryRate}%</div>
-              <div className="mt-2 flex items-center text-xs font-medium">
-                {compareWithPreviousPeriod && previousData?.stats?.deliveryRate ? (
-                  <div className="flex items-center gap-1">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-[10px] font-medium",
-                        calculatePercentChange(data.stats.deliveryRate, previousData.stats.deliveryRate).value >= 0
-                          ? "border-green-500 text-green-600 dark:text-green-400"
-                          : "border-red-500 text-red-600 dark:text-red-400"
-                      )}
-                    >
-                      {calculatePercentChange(data.stats.deliveryRate, previousData.stats.deliveryRate).value >= 0 ? (
-                        <ArrowUpRight className="h-3 w-3 mr-0.5" />
-                      ) : (
-                        <ArrowDownRight className="h-3 w-3 mr-0.5" />
-                      )}
-                      {calculatePercentChange(data.stats.deliveryRate, previousData.stats.deliveryRate).label}
-                    </Badge>
-                    <span className="ml-1 text-slate-400">vs prev period</span>
-                  </div>
-                ) : (
-                  <>
-                    <CheckCircle className="mr-1 h-3 w-3 text-violet-500" />
-                    <span className="text-slate-400">{data.stats.deliveredOrders} orders successful</span>
-                  </>
-                )}
+            <CardContent className="pb-3">
+              <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{data.stats.deliveryRate}%</div>
+              <div className="mt-1 flex items-center text-[10px] font-medium text-slate-400">
+                <span className="text-violet-500">Target: 70%</span>
+                <span className="mx-1">•</span>
+                {previousData?.stats?.deliveryRate !== undefined
+                  ? `vs ${previousData.stats.deliveryRate}% last period`
+                  : `${data.stats.deliveredOrders} orders successful`
+                }
               </div>
+              {/* Sparkline with target line */}
+              {data.ordersPerDay.length > 1 && (
+                <div className="h-10 mt-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data.ordersPerDay}>
+                      <defs>
+                        <linearGradient id="sparklineViolet" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <Area
+                        type="monotone"
+                        dataKey={(entry) => entry.total > 0 ? ((entry.delivered / entry.total) * 100) : 0}
+                        stroke="#8b5cf6"
+                        strokeWidth={1.5}
+                        fill="url(#sparklineViolet)"
+                        fillOpacity={0.4}
+                        name="Daily rate"
+                      />
+                      <ReferenceLine y={70} stroke="#94a3b8" strokeDasharray="2 2" label="Target: 70%" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Return Rate Card - NEW */}
+          <Card className={cn(
+            "group relative overflow-hidden transition-all hover:shadow-lg border-none bg-white dark:bg-slate-900 shadow-sm ring-1",
+            data.stats.returnedOrders / data.stats.totalOrders > 0.15
+              ? "ring-rose-300 dark:ring-rose-800"
+              : data.stats.returnedOrders / data.stats.totalOrders > 0.10
+                ? "ring-amber-300 dark:ring-amber-800"
+                : "ring-slate-200 dark:ring-slate-800"
+          )}>
+            <div className={cn(
+              "absolute top-0 left-0 h-1 w-full",
+              data.stats.returnedOrders / data.stats.totalOrders > 0.15
+                ? "bg-rose-500"
+                : data.stats.returnedOrders / data.stats.totalOrders > 0.10
+                  ? "bg-amber-500"
+                  : "bg-slate-400"
+            )} />
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle className="text-xs font-medium text-slate-500 dark:text-slate-400">Return rate</CardTitle>
+                <div className="flex items-center gap-1 mt-1">
+                  <Badge
+                    variant={data.stats.returnedOrders / data.stats.totalOrders > 0.15 ? "destructive" : "outline"}
+                    className={cn(
+                      "text-[10px] font-medium px-1.5 py-0",
+                      data.stats.returnedOrders / data.stats.totalOrders <= 0.15 && data.stats.returnedOrders / data.stats.totalOrders > 0.10
+                        ? "border-amber-200 text-amber-700 dark:text-amber-400 bg-amber-50/50"
+                        : data.stats.returnedOrders / data.stats.totalOrders <= 0.10
+                          ? "border-emerald-200 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50"
+                          : ""
+                    )}
+                  >
+                    <span>{((data.stats.returnedOrders / data.stats.totalOrders) * 100).toFixed(1)}%</span>
+                  </Badge>
+                </div>
+              </div>
+              <div className={cn(
+                "rounded-xl p-1.5 transition-transform group-hover:rotate-6",
+                data.stats.returnedOrders / data.stats.totalOrders > 0.15
+                  ? "bg-rose-50 text-rose-600 dark:bg-rose-900/30"
+                  : data.stats.returnedOrders / data.stats.totalOrders > 0.10
+                    ? "bg-amber-50 text-amber-600 dark:bg-amber-900/30"
+                    : "bg-slate-50 text-slate-600 dark:bg-slate-800/30"
+              )}>
+                <XCircle className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent className="pb-3">
+              <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                {data.stats.returnedOrders} <span className="text-sm font-medium text-slate-400 ml-1">orders</span>
+              </div>
+              <div className="mt-1 flex items-center text-[10px] font-medium text-slate-400">
+                {((data.stats.returnedOrders / data.stats.totalOrders) * 100).toFixed(1)}% of total orders
+              </div>
+              {/* Sparkline */}
+              {data.ordersPerDay.length > 1 && (
+                <div className="h-10 mt-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data.ordersPerDay}>
+                      <defs>
+                        <linearGradient id="sparklineRose" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <Area
+                        type="monotone"
+                        dataKey={(entry) => entry.total > 0 ? ((entry.returned || 0) / entry.total) * 100 : 0}
+                        stroke="#f43f5e"
+                        strokeWidth={1.5}
+                        fill="url(#sparklineRose)"
+                        fillOpacity={0.4}
+                        name="Return rate"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </CardContent>
           </Card>
 
         </div>
+
+        {/* Sparkline gradients */}
+        <svg className="hidden">
+          <defs>
+            <linearGradient id="sparklineIndigo" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="sparklineBlue" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="sparklineGreen" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="sparklineRose" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+        </svg>
 
         {/* Charts Row */}
         <div className="grid gap-6 lg:grid-cols-2">
@@ -492,7 +702,7 @@ export default function AdminDashboard() {
                 <div>
                   <CardTitle className="text-lg font-bold">Orders Trend</CardTitle>
                   <CardDescription>
-                    {compareWithPreviousPeriod ? 'Current (solid) vs Previous (dashed)' : `Daily activity for ${periodLabels[period].toLowerCase()}`}
+                    Current (solid) vs Previous period (dashed) — {periodLabels[period].toLowerCase()}
                   </CardDescription>
                 </div>
                 <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
@@ -501,9 +711,9 @@ export default function AdminDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[320px] w-full pt-4">
+              <div className="h-[340px] w-full pt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data.ordersPerDay} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <AreaChart data={data.ordersPerDay} margin={{ top: 10, right: 10, left: 10, bottom: 35 }}>
                     <defs>
                       <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
@@ -517,16 +727,17 @@ export default function AdminDashboard() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
                     <XAxis
                       dataKey="date"
-                      tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { weekday: 'short' })}
+                      tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       axisLine={false}
                       tickLine={false}
-                      className="text-[11px] font-medium text-slate-400 uppercase"
+                      className="text-[11px] font-medium text-slate-400"
                       dy={10}
                     />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
                       className="text-[11px] font-medium text-slate-400"
+                      label={{ value: 'Orders', angle: -90, position: 'insideLeft', style: { fontSize: '11px', fill: '#94a3b8' } }}
                     />
                     <Tooltip
                       contentStyle={{
@@ -539,6 +750,20 @@ export default function AdminDashboard() {
                       itemStyle={{ fontSize: '12px', fontWeight: 600 }}
                       labelStyle={{ fontSize: '11px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase', color: '#64748b' }}
                     />
+                    {/* Average reference line */}
+                    {data.ordersPerDay.length > 0 && (
+                      <ReferenceLine
+                        y={data.ordersPerDay.reduce((sum, day) => sum + day.total, 0) / data.ordersPerDay.length}
+                        stroke="#94a3b8"
+                        strokeDasharray="4 4"
+                        label={{
+                          value: `Avg: ${(data.ordersPerDay.reduce((sum, day) => sum + day.total, 0) / data.ordersPerDay.length).toFixed(0)}/day`,
+                          position: 'topRight',
+                          fill: '#94a3b8',
+                          fontSize: 10
+                        }}
+                      />
+                    )}
                     {/* Current Period Areas */}
                     <Area
                       type="monotone"
@@ -559,7 +784,7 @@ export default function AdminDashboard() {
                       name="Delivered"
                     />
                     {/* Previous Period Lines (dashed) */}
-                    {compareWithPreviousPeriod && previousData?.ordersPerDay && (
+                    {previousData?.ordersPerDay && (
                       <>
                         <Line
                           type="monotone"
@@ -583,7 +808,7 @@ export default function AdminDashboard() {
                         />
                       </>
                     )}
-                    {compareWithPreviousPeriod && previousData?.ordersPerDay && <Legend />}
+                    <Legend verticalAlign="top" height={36} iconType="circle" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -603,38 +828,59 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="flex items-center justify-center">
-              <div className="h-[320px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={statusChartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={80}
-                      outerRadius={110}
-                      paddingAngle={5}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {statusChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                        border: 'none', 
-                        borderRadius: '12px', 
-                        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' 
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                {/* Custom Legend Overlay for Pie */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-3xl font-bold text-slate-900 dark:text-white">{data.stats.totalOrders}</span>
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-tighter">Total Orders</span>
+            <CardContent className="flex items-center justify-center p-6">
+              <div className="flex items-center gap-8 h-[320px] w-full">
+                {/* Donut Chart */}
+                <div className="flex-1 relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={statusChartData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={80}
+                        outerRadius={110}
+                        paddingAngle={3}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {statusChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          border: 'none',
+                          borderRadius: '12px',
+                          boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* Center overlay */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-3xl font-bold text-slate-900 dark:text-white">{data.stats.totalOrders}</span>
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-tighter">Total Orders</span>
+                  </div>
+                </div>
+
+                {/* Side Legend */}
+                <div className="w-36 space-y-2">
+                  {statusChartData.map((entry) => (
+                    <div key={entry.name} className="flex items-center justify-between py-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
+                        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{entry.name}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">{entry.value}</div>
+                        <div className="text-[10px] text-slate-400">
+                          {((entry.value / data.stats.totalOrders) * 100).toFixed(0)}%
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -646,34 +892,43 @@ export default function AdminDashboard() {
           {/* Orders by City - Takes 2/3 */}
           <Card className="lg:col-span-2 border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 overflow-hidden">
             <CardHeader>
-              <CardTitle className="text-lg font-bold">Regional Performance</CardTitle>
-              <CardDescription>Top cities by order volume and delivery success</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-bold">Regional Performance</CardTitle>
+                  <CardDescription>Top cities by order volume and delivery success</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[320px]">
+              <div className="h-[340px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={cityChartData} layout="vertical" margin={{ left: 40, right: 30 }}>
+                  <BarChart data={cityChartData} layout="vertical" margin={{ left: 40, right: 70, top: 40, bottom: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
                     <XAxis type="number" axisLine={false} tickLine={false} className="text-[11px] font-medium text-slate-400" />
-                    <YAxis 
-                      dataKey="city" 
-                      type="category" 
-                      axisLine={false} 
-                      tickLine={false} 
+                    <YAxis
+                      dataKey="city"
+                      type="category"
+                      axisLine={false}
+                      tickLine={false}
                       className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase"
                       width={80}
                     />
-                    <Tooltip 
+                    <Tooltip
                       cursor={{ fill: '#f8fafc', opacity: 0.5 }}
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                        border: 'none', 
-                        borderRadius: '12px', 
-                        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' 
+                      contentStyle={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        border: 'none',
+                        borderRadius: '12px',
+                        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
                       }}
                     />
-                    <Bar dataKey="total" fill="#6366f1" name="Total Orders" radius={[0, 4, 4, 0]} barSize={20} />
-                    <Bar dataKey="delivered" fill="#10b981" name="Delivered" radius={[0, 4, 4, 0]} barSize={20} />
+                    <Bar dataKey="total" fill="#6366f1" name="Total Orders" radius={[0, 4, 4, 0]} barSize={20}>
+                      <labelList dataKey="total" position="right" fontSize={11} fill="#64748b" />
+                    </Bar>
+                    <Bar dataKey="delivered" fill="#10b981" name="Delivered" radius={[0, 4, 4, 0]} barSize={20}>
+                      <labelList dataKey="delivered" position="right" fontSize={11} fill="#64748b" />
+                    </Bar>
+                    <Legend verticalAlign="top" align="left" height={36} iconType="circle" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -683,63 +938,53 @@ export default function AdminDashboard() {
           {/* Platform Metrics - Takes 1/3 */}
           <Card className="border-none bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 overflow-hidden">
             <CardHeader>
-              <CardTitle className="text-lg font-bold">Quick Metrics</CardTitle>
-              <CardDescription>Platform-wide overview</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-bold">Quick Metrics</CardTitle>
+                  <CardDescription>Last updated: 2 min ago</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 group transition-all hover:bg-white dark:hover:bg-slate-800 hover:shadow-md ring-1 ring-transparent hover:ring-slate-100 dark:hover:ring-slate-700">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
-                    <Users className="h-5 w-5" />
+              {/* System Overview */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <div className="h-9 w-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                    <Users className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">Platform Users</p>
-                    <p className="text-xs text-slate-500 font-medium">{data.activeUsersCount} currently active</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Users</p>
+                    <p className="text-lg font-bold text-slate-900 dark:text-white">{data.usersCount}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-xl font-bold text-slate-900 dark:text-white">{data.usersCount}</span>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <div className="h-9 w-9 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600">
+                    <Warehouse className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Products</p>
+                    <p className="text-lg font-bold text-slate-900 dark:text-white">{data.productsCount}</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 group transition-all hover:bg-white dark:hover:bg-slate-800 hover:shadow-md ring-1 ring-transparent hover:ring-slate-100 dark:hover:ring-slate-700">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600">
-                    <Warehouse className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">Active Products</p>
-                    <p className="text-xs text-slate-500 font-medium">{data.lowStockProducts.length} low stock alerts</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="text-xl font-bold text-slate-900 dark:text-white">{data.productsCount}</span>
-                </div>
-              </div>
-
+              {/* Live Operations */}
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Operations Pipeline</p>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400">
-                      <Clock className="h-4 w-4 text-amber-500" />
-                      New Orders
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Live Operations</p>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3.5 w-3.5 text-amber-500" />
+                      <span className="text-xs font-medium text-slate-600 dark:text-slate-400">New Orders</span>
                     </div>
-                    <Badge variant="secondary" className="rounded-full bg-amber-50 text-amber-600 dark:bg-amber-900/20">{data.stats.newOrders}</Badge>
+                    <Badge className="rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30">{data.stats.newOrders}</Badge>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400">
-                      <Truck className="h-4 w-4 text-indigo-500" />
-                      In Transit
+                  <div className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-3.5 w-3.5 text-indigo-500" />
+                      <span className="text-xs font-medium text-slate-600 dark:text-slate-400">In Transit</span>
                     </div>
-                    <Badge variant="secondary" className="rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20">{data.stats.shippedOrders}</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400">
-                      <XCircle className="h-4 w-4 text-rose-500" />
-                      Return Rate
-                    </div>
-                    <Badge variant="destructive" className="rounded-full">{data.stats.returnedOrders}</Badge>
+                    <Badge className="rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30">{data.stats.shippedOrders}</Badge>
                   </div>
                 </div>
               </div>
@@ -775,6 +1020,7 @@ export default function AdminDashboard() {
                     <th className="py-4 px-6 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Destination</th>
                     <th className="py-4 px-6 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-right">Amount</th>
                     <th className="py-4 px-6 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-center">Status</th>
+                    <th className="py-4 px-6 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
@@ -816,6 +1062,73 @@ export default function AdminDashboard() {
                           {statusConfig[order.status]?.label || order.status}
                         </Badge>
                       </td>
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {order.status === 'NEW' && (
+                            <>
+                              <Button
+                                size="sm"
+                                className="h-7 px-3 text-xs font-medium bg-indigo-600 hover:bg-indigo-700"
+                                onClick={(e) => { e.stopPropagation(); router.push(`/orders/${order.id}`); }}
+                              >
+                                Confirm
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0"
+                                onClick={(e) => { e.stopPropagation(); window.open(`tel:${order.customerPhone}`); }}
+                              >
+                                <Phone className="h-3.5 w-3.5" />
+                              </Button>
+                            </>
+                          )}
+                          {order.status === 'SHIPPED' && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 px-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50"
+                              onClick={(e) => { e.stopPropagation(); router.push(`/orders/${order.id}`); }}
+                            >
+                              Track
+                            </Button>
+                          )}
+                          {order.status === 'RETURNED' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-3 text-xs font-medium border-amber-300 text-amber-700 hover:bg-amber-50"
+                              onClick={(e) => { e.stopPropagation(); router.push(`/orders/${order.id}`); }}
+                            >
+                              Review
+                            </Button>
+                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreHorizontal className="h-3.5 w-3.5 text-slate-400" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" forceMount>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/orders/${order.id}`); }}>
+                                <Eye className="mr-2 h-3.5 w-3.5" /> View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                                <Edit className="mr-2 h-3.5 w-3.5" /> Edit Order
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={(e) => e.stopPropagation()} className="text-destructive">
+                                <CloseIcon className="mr-2 h-3.5 w-3.5" /> Cancel Order
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -823,10 +1136,17 @@ export default function AdminDashboard() {
             </div>
             {data.recentOrders.length === 0 && (
               <div className="py-20 text-center">
-                <div className="mx-auto h-12 w-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-4">
-                  <Package className="h-6 w-6 text-slate-300" />
+                <div className="mx-auto h-16 w-16 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-4">
+                  <Package className="h-8 w-8 text-slate-300" />
                 </div>
-                <p className="text-slate-500 font-medium text-sm">No recent orders found</p>
+                <p className="text-slate-500 font-medium text-sm mb-4">No orders in the last 30 days</p>
+                <Button
+                  onClick={() => router.push('/orders')}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                >
+                  View all orders
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
             )}
           </CardContent>

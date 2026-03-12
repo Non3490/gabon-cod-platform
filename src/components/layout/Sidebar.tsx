@@ -361,7 +361,7 @@ function NavContent({ user, collapsed, onCollapsedChange, onNavClick }: NavConte
           {Object.entries(sections).map(([sectionName, items]) => (
             <div key={sectionName} className="space-y-1">
               {!collapsed && (
-                <h3 className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-2">
+                <h3 className="px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-500 mb-3">
                   {sectionName}
                 </h3>
               )}
@@ -376,8 +376,8 @@ function NavContent({ user, collapsed, onCollapsedChange, onNavClick }: NavConte
                         className={cn(
                           'group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 cursor-pointer',
                           isActive
-                            ? 'bg-indigo-50/50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400'
-                            : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                            ? 'bg-indigo-50/50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 font-semibold'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200',
                           collapsed && 'justify-center px-0 h-10 w-10 mx-auto'
                         )}
                       >
@@ -389,7 +389,7 @@ function NavContent({ user, collapsed, onCollapsedChange, onNavClick }: NavConte
                         </div>
                         {!collapsed && <span className="flex-1 truncate">{item.title}</span>}
                         {isActive && !collapsed && (
-                          <div className="absolute left-0 h-4 w-[2px] rounded-r-full bg-indigo-600 dark:bg-indigo-400" />
+                          <div className="absolute left-0 h-6 w-0.5 rounded-r-full bg-indigo-600 dark:bg-indigo-400" />
                         )}
                         {collapsed && <div className="sr-only">{item.title}</div>}
                       </div>
