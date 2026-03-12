@@ -156,35 +156,35 @@ export default function AdminDashboard() {
   }, [user, userLoading, router])
 
   useEffect(() => {
-    if (user) {
-      fetchDashboardData()
+    if (!user) return
+
+    async function fetchData() {
+      try {
+        // Always fetch current and previous period data
+        const { previousStart, previousEnd } = getPreviousPeriodDates()
+        const requests = [
+          fetch(`/api/dashboard?period=${period}`),
+          fetch(`/api/dashboard?period=custom&dateFrom=${previousStart}&dateTo=${previousEnd}`)
+        ]
+
+        const responses = await Promise.all(requests)
+
+        if (responses[0].ok) {
+          setData(await responses[0].json())
+        }
+
+        if (responses[1]?.ok) {
+          setPreviousData(await responses[1].json())
+        }
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error)
+      } finally {
+        setLoading(false)
+      }
     }
+
+    fetchData()
   }, [user, period])
-
-  const fetchDashboardData = async () => {
-    try {
-      // Always fetch current and previous period data
-      const { previousStart, previousEnd } = getPreviousPeriodDates()
-      const requests = [
-        fetch(new URL(`/api/dashboard?period=${period}`, window.location.origin).toString()),
-        fetch(new URL(`/api/dashboard?period=custom&dateFrom=${previousStart}&dateTo=${previousEnd}`, window.location.origin).toString())
-      ]
-
-      const responses = await Promise.all(requests)
-
-      if (responses[0].ok) {
-        setData(await responses[0].json())
-      }
-
-      if (responses[1]?.ok) {
-        setPreviousData(await responses[1].json())
-      }
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const getPreviousPeriodDates = () => {
     const periodDays = period === 'today' ? 1 : period === '7d' ? 7 : 30
