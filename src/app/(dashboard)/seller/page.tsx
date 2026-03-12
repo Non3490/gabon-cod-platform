@@ -105,16 +105,29 @@ export default function SellerDashboard() {
 
   if (userLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50/50 dark:bg-slate-950">
-        <div className="relative flex items-center justify-center">
-          <div className="absolute animate-ping h-12 w-12 rounded-full bg-primary/20" />
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
+      <DashboardLayout user={user || { id: '', email: '', name: '', role: 'SELLER' }}>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="relative flex items-center justify-center">
+            <div className="absolute animate-ping h-12 w-12 rounded-full bg-primary/20" />
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     )
   }
 
-  if (!user || !data) return null
+  if (!user || !data) {
+    return (
+      <DashboardLayout user={user || { id: '', email: '', name: '', role: 'SELLER' }}>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="relative flex items-center justify-center">
+            <div className="absolute animate-ping h-12 w-12 rounded-full bg-primary/20" />
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout user={user}>
